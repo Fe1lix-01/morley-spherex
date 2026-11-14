@@ -18,7 +18,7 @@ from app.services import frame_images as frame_images_service
 client = TestClient(app)
 
 
-def test_get_frames():
+def test_get_frames(fits_sinteticos):
     response = client.get("/api/v1/frames")
 
     assert response.status_code == 200
@@ -92,7 +92,7 @@ def test_list_frames_rejects_fits_without_wcs(
     ):
         frames_service.list_frames()
 
-def test_get_frame_image_returns_png():
+def test_get_frame_image_returns_png(fits_sinteticos):
     """Comprueba que un FITS válido se entregue como imagen PNG."""
 
     # Recuperamos el identificador de un frame existente.
