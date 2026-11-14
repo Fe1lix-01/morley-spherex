@@ -218,3 +218,15 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Recursos locales y archivos generados
+data/m101/
+*.fits
+*.fits.gz
+node_modules/
+.next/
+*.tsbuildinfo
+.env.*
+!.env.example
+
+apps/web/next-env.d.ts
