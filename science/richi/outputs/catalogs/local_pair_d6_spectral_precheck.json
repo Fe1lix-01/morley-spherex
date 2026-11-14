@@ -1,0 +1,68 @@
+{
+  "schema_version": "morley.local_spectral_precheck.v1",
+  "generated_at_utc": "2026-11-14T20:43:29.012360+00:00",
+  "target": {
+    "ra_deg": 295.4097841,
+    "dec_deg": -15.2231692,
+    "frame": "ICRS"
+  },
+  "source": "local SPHEREx Level 2 FITS",
+  "evidence_type": "observed_archive_products",
+  "observations": {
+    "2025": {
+      "obs_id": "2025W38_1A_0596_1D6",
+      "filename": "level2_2025W38_1A_0596_1D6_spx_l2b-v27-2026-237 (1).fits",
+      "date_obs": "2025-09-17T09:44:11.768",
+      "bunit": "MJy / sr",
+      "detector": "6",
+      "image_shape": [
+        2040,
+        2040
+      ],
+      "x_px": 1421.484,
+      "y_px": 2009.0,
+      "wavelength_um": 4.41303698,
+      "bandwidth_um": 0.03737172,
+      "valid_fraction_5x5": 1.0,
+      "central_good": true,
+      "central_flags": 0,
+      "wavelength_method": "approximate_WCS-WAVE"
+    },
+    "2026": {
+      "obs_id": "2026W39_2A_0324_4D6",
+      "filename": "level2_2026W39_2A_0324_4D6_spx_l2b-v27-2026-271.fits",
+      "date_obs": "2026-09-26T00:32:44.795",
+      "bunit": "MJy / sr",
+      "detector": "6",
+      "image_shape": [
+        2040,
+        2040
+      ],
+      "x_px": 1297.171,
+      "y_px": 240.899,
+      "wavelength_um": 4.9323516,
+      "bandwidth_um": 0.03768417,
+      "valid_fraction_5x5": 1.0,
+      "central_good": true,
+      "central_flags": 0,
+      "wavelength_method": "approximate_WCS-WAVE"
+    }
+  },
+  "comparison": {
+    "delta_lambda_um": 0.51931462,
+    "spectral_mismatch": 13.838078,
+    "bandpass_overlap_fraction": 0.0,
+    "quality_passed": true,
+    "exploratory_threshold": 0.25,
+    "status": "approximate_spectral_mismatch"
+  },
+  "scientific_integrity": {
+    "wavelength_method": "approximate_WCS-WAVE",
+    "cwave_cband_verified": false,
+    "wcs_registered": false,
+    "epsf_fitted": false,
+    "zogy_executed": false,
+    "ready_for_zogy": false,
+    "motion_detected": false
+  }
+}
