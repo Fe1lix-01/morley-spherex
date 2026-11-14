@@ -1,24 +1,24 @@
-# Pruebas y auditorías K1/K2
+# Tests and K1/K2 Audits
 
 ## Backend
 
-Desde `apps/science-api`:
+From `apps/science-api`:
 
 ```powershell
 ..\..\.venv\Scripts\python.exe -m pytest tests -v
 ```
 
-Último resultado reportado por Kevin: **248 pruebas aprobadas**. No se ejecutó de nuevo durante la preparación de estos README. Los resultados deben comprobarse de nuevo cuando cambien el código, las dependencias o el entorno.
+Latest result reported by Kevin: **248 tests passed**. The suite was not rerun while preparing these README files. Recheck results after code, dependency, or environment changes.
 
-Para revisar los clientes HTTP:
+To check the HTTP clients:
 
 ```powershell
 ..\..\.venv\Scripts\python.exe -m pytest tests/test_irsa.py tests/test_sia.py tests/test_irsa_cutouts.py -v
 ```
 
-## Frontend y proxy
+## Frontend and proxy
 
-Desde `labs/frontend/aladin-test`, con dependencias instaladas:
+From `apps/web`, with dependencies installed:
 
 ```powershell
 node --test tests/science-proxy.test.mjs
@@ -27,32 +27,32 @@ npx next typegen
 npx tsc --noEmit
 ```
 
-La comprobación histórica del proxy incluyó ausencia de configuración, PNG correcto, error del backend, formato inesperado, cuerpo vacío, conexión rechazada y timeout. No se volvió a ejecutar al redactar esta entrega.
+Historical proxy checks covered missing configuration, valid PNG, backend error, unexpected format, empty body, refused connection, and timeout. They were not rerun while preparing these docs.
 
-## K1 y K2
+## K1 and K2
 
-K1 revisó catálogo, TAP, SIA, registro remoto, previsualizaciones, capas y contratos. Corrigió incoherencias concretas y documentó propuestas sin implementar. K2 añadió pruebas HTTP de timeouts, errores, reintentos, contenidos y cierre; no requirió modificar clientes de producción.
+K1 reviewed the catalog, TAP, SIA, remote snapshot, previews, layers, and contracts. It fixed specific inconsistencies and documented proposals that were not implemented. K2 added HTTP tests for timeouts, errors, retries, response content, and connection closure; production clients did not need changes for K2.
 
-K2 utiliza servidores locales y puertos controlados; no requiere fallos reales de NASA. Un resultado vacío válido se diferencia de un cuerpo vacío o formato inesperado.
+K2 uses controlled local servers and ports; NASA outages are not required. A valid empty result is distinguished from an empty body or unexpected format.
 
-Límites que deben acompañar la entrega:
+Limitations that should accompany the delivery:
 
-- Se reprodujeron timeouts de lectura, no todos los tipos de timeout.
-- No se estableció un plazo total para todos los intentos.
-- Las pruebas de conexión rechazada no cuentan intentos de conexión y liberan previamente el puerto: existe una ventana para que otro proceso lo ocupe.
-- En Windows el rechazo local medido superó dos segundos; esas pruebas usan 10 s de conexión.
-- El cierre de conexiones se verificó en los escenarios documentados, no en todas las combinaciones de fallo.
-- La captura amplia de errores de PNG, tipado genérico y algunas reglas entre modelos siguen registrados como propuestas o límites en K1.
+- Read timeouts were reproduced; not every timeout type was tested.
+- No total deadline was established across all attempts.
+- Connection-refusal tests do not count connection attempts and release the port first, leaving a window in which another process could occupy it.
+- On Windows, local connection refusal took more than two seconds; these tests use a 10-second connect timeout.
+- Connection closure was checked in the documented scenarios, not every failure combination.
+- Broad exception handling in PNG rendering, generic typing, and some cross-model rules remain proposals or limitations recorded in K1.
 
-Consultar las copias originales en `referencias/` para el detalle de hallazgos y evidencia. No presentar todas las propuestas como correcciones implementadas.
+See the copies in `referencias/` for detailed findings and evidence. Do not describe every proposal as an implemented fix.
 
-## Comprobación manual mínima
+## Minimum manual checks
 
-- Swagger muestra Objects, IRSA, SIA, Frames y Science.
-- Catálogo agrupa los seis archivos de SIMP como un objeto y permite sus seis PNG.
-- M101 aparece solo si hay observaciones registradas y el detalle separa local/remoto.
-- Cada producto remoto usa su product_id completo y obtiene su recorte, con red disponible.
-- La figura de M101 se genera desde el cubo configurado; la ausencia de configuración produce 503.
-- Sin resultados de búsqueda, Objects devuelve HTTP 200 y lista vacía.
-- El proxy distingue error, timeout, contenido vacío y formato inesperado sin entregar trazas internas.
-- Los datos remotos no se confunden con insumos comprobados del cubo ni con movimiento demostrado.
+- Swagger lists Objects, IRSA, SIA, Frames, and Science.
+- The catalog groups the six SIMP files as one object and displays all six PNGs.
+- M101 appears only when observations are registered; details distinguish local and remote records.
+- Each remote product uses its complete `product_id` and retrieves its cutout when the network is available.
+- The M101 figure is generated from the configured cube; missing configuration returns 503.
+- A search with no results returns HTTP 200 and an empty list.
+- The proxy distinguishes errors, timeout, empty content, and unexpected format without returning internal traces.
+- Remote data are not misrepresented as confirmed inputs to the cube or as proof of motion.

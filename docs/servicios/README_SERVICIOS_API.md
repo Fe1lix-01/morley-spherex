@@ -1,78 +1,78 @@
-# Arquitectura y contratos de API
+# API Architecture and Contracts
 
-## Responsabilidades
+## Responsibilities
 
-- `app/routers`: parámetros HTTP, modelos de respuesta y traducción de excepciones.
-- `app/services`: agrupación, transformación, validación y generación de resultados.
-- `app/clients`: solicitudes a IRSA, timeouts, clasificación de errores y descarga.
-- `app/schemas`: contratos Pydantic y coherencia de datos.
-- `app/core/paths.py`: resolución de rutas respecto de la estructura del proyecto.
+- `app/routers`: HTTP parameters, response models, and exception-to-response translation.
+- `app/services`: grouping, transformation, validation, and result generation.
+- `app/clients`: IRSA requests, timeouts, error classification, and downloads.
+- `app/schemas`: Pydantic contracts and data consistency rules.
+- `app/core/paths.py`: path resolution relative to the project structure.
 
-Los cinco servicios auditados en K1 no importan directamente FastAPI/Starlette ni construyen respuestas HTTP. Mantener esa separación.
+The five services audited in K1 do not directly import FastAPI/Starlette or construct HTTP responses. Preserve that separation.
 
-## Rutas principales
+## Main routes
 
-| Método y ruta | Entrada principal | Respuesta |
+| Method and route | Main input | Response |
 |---|---|---|
-| `GET /api/v1/objects` | `q` opcional | JSON con total y resúmenes |
-| `GET /api/v1/objects/{object_id}` | ID del catálogo | Detalle con observaciones locales/remotas |
-| `GET /api/v1/irsa/observations` | `ra`, `dec`, `band`, `limit` | Metadatos TAP normalizados |
-| `GET /api/v1/sia/observations` | `ra`, `dec`, `collection`, `radius_arcsec`, `band`, `limit` | Metadatos SIA normalizados |
-| `GET /api/v1/objects/{object_id}/remote-preview` | `product_id` obligatorio | `image/png` de un recorte remoto |
-| `GET /api/v1/science/m101/channel-63/preview` | FITS configurado en servidor | `image/png` con tres paneles |
-| `GET /api/v1/frames` | Consultar Swagger | Metadatos de frames locales |
-| `GET /api/v1/frames/{frame_id}/image` | Frame local registrado | PNG local |
+| `GET /api/v1/objects` | Optional `q` | JSON with total and summaries |
+| `GET /api/v1/objects/{object_id}` | Catalog ID | Detail with local and remote observations |
+| `GET /api/v1/irsa/observations` | `ra`, `dec`, `band`, `limit` | Normalized TAP metadata |
+| `GET /api/v1/sia/observations` | `ra`, `dec`, `collection`, `radius_arcsec`, `band`, `limit` | Normalized SIA metadata |
+| `GET /api/v1/objects/{object_id}/remote-preview` | Required `product_id` | `image/png` remote cutout |
+| `GET /api/v1/science/m101/channel-63/preview` | Server-configured FITS | Three-panel `image/png` |
+| `GET /api/v1/frames` | See Swagger | Local frame metadata |
+| `GET /api/v1/frames/{frame_id}/image` | Registered local frame | Local PNG |
 
-Health y Observations son módulos existentes que deben conservarse. Registrar los routers nuevos una sola vez en `app/main.py`; `frames` y `science_preview` son funcionalidades diferentes y se conservan ambas.
+Health and Observations are existing modules and must be preserved. Register each router only once in `app/main.py`. `frames` and `science_preview` are separate features; retain both.
 
-## Catálogo de objetos
+## Object catalog
 
-`services/objects.py` reutiliza `list_observations()` sin volver a leer FITS. Reconoce la convención de archivos `nombre_D1_...fits`, hasta D6, mediante una expresión regular que conserva espacios del nombre.
+`services/objects.py` reuses `list_observations()` without reading FITS files again. It recognizes filenames following `name_D1_...fits`, through D6, using a regular expression that preserves spaces in names.
 
-Agrupa usando `casefold()`, selecciona un nombre de forma determinista y genera UUID5. Los IDs de variantes locales presentes permiten consultar el mismo grupo. No existe un registro histórico para garantizar IDs de variantes eliminadas.
+Objects are grouped with `casefold()`, a deterministic name is selected, and UUID5 is generated. IDs for local variants currently present can resolve to the same group. There is no historical registry to guarantee IDs for variants that have been removed.
 
-La búsqueda `q` es parcial e insensible a mayúsculas. Sin coincidencias devuelve HTTP 200 con total cero. Un ID inexistente devuelve 404.
+Search `q` is partial and case-insensitive. No matches return HTTP 200 with a total of zero. An unknown ID returns 404.
 
-`observation_count` suma registros locales y remotos; los subtotales y listas se validan. No se deduplican científicamente dos registros de fuentes diferentes sin conocer su procedencia.
+`observation_count` sums local and remote records; subtotals and lists are validated. Records from separate sources are not scientifically deduplicated without provenance linking them.
 
-M101 solo se incorpora si existen observaciones locales reconocidas o registros remotos presentes y válidos. No insertar un objeto ficticio para hacer aparecer una figura. `science_preview` indica una operación soportada; no garantiza que el cubo esté disponible.
+M101 is included only when recognized local observations or a present, valid remote snapshot exists. Do not insert a fictitious object to make a figure appear. `science_preview` indicates a supported operation; it does not guarantee that the cube is currently available.
 
-## TAP y SIA
+## TAP and SIA
 
-RA en grados ICRS: `0 <= ra < 360`. Dec: `-90 <= dec <= 90`. Bandas SPHEREx-D1 a D6. Límite de respuesta de 1 a 100.
+RA is in ICRS degrees: `0 <= ra < 360`. Dec: `-90 <= dec <= 90`. SPHEREx bands are D1 through D6. The response limit is 1 to 100.
 
-SIA admite `spherex_qr2` y `spherex_qr3`, con QR3 predeterminado. Radio en segundos de arco, mayor que cero y hasta 300 por la validación actual del proyecto. Ese máximo no se presenta como límite oficial del proveedor. El cliente convierte el radio a grados para `POS=CIRCLE`.
+SIA accepts `spherex_qr2` and `spherex_qr3`, with QR3 as the default. Radius is in arcseconds, greater than zero and up to 300 under the project's current validation. This maximum is not presented as an official provider limit. The client converts the radius to degrees for `POS=CIRCLE`.
 
-El límite SIA se aplica después de consultar, filtrar y ordenar los resultados. `count` es lo devuelto, no el total disponible en NASA. Conservar `product_id` completo: el identificador de exposición por sí solo puede no distinguir detectores.
+The SIA limit is applied after querying, filtering, and sorting results. `count` is the number returned, not the total available at NASA. Preserve the full `product_id`: an exposure ID alone may not distinguish detectors.
 
-Ejemplo para Swagger o navegador, con consulta externa real:
+Example for Swagger or a browser; this makes a real external query:
 
 ```text
 /api/v1/sia/observations?collection=spherex_qr2&ra=210.8022671&dec=54.34895&radius_arcsec=30&band=SPHEREx-D4&limit=2
 ```
 
-Los clientes se ejecutan al invocar sus métodos, no al importar sus módulos. Los scripts de prácticas no sustituyen el servicio.
+Clients execute when their methods are called, not when modules are imported. Practice scripts do not replace the service.
 
-## Recortes remotos
+## Remote cutouts
 
-La previsualización busca el producto dentro del objeto registrado. El consumidor proporciona un `product_id`, no una URL arbitraria de descarga.
+The preview looks up the product in the registered object. The consumer provides a `product_id`, not an arbitrary download URL.
 
-El cliente restringe origen, ruta SPHEREx, extensión FITS y ausencia de query/fragmento en la URL original. No sigue redirecciones. Descarga un recorte de 0,025 grados en streaming, con límite de 8 MiB. El servicio exige IMAGE 2D, WCS celestial y la posición consultada dentro del recorte; reutiliza el contraste PNG existente.
+The client restricts the origin, SPHEREx path, FITS extension, and absence of a query or fragment in the original URL. It does not follow redirects. It streams a 0.025-degree cutout with an 8 MiB size limit. The service requires a 2D IMAGE extension, celestial WCS, and the queried position within the image; it reuses the existing PNG contrast rendering.
 
-El navegador no muestra FITS directamente mediante `<img>`. Ampliar el PNG en pantalla no añade resolución científica.
+The browser cannot display FITS directly with `<img>`. Enlarging a PNG on screen does not add scientific resolution.
 
-## Errores y límites HTTP
+## HTTP errors and limits
 
-- Parámetros inválidos: normalmente HTTP 422 por FastAPI/Pydantic.
-- Objeto/producto inexistente: 404.
-- Respuesta externa inválida: 502.
-- Catálogo, configuración científica o servicio no disponible: 503.
-- Timeout externo: 504.
+- Invalid parameters: normally HTTP 422 from FastAPI/Pydantic.
+- Unknown object/product: 404.
+- Invalid external response: 502.
+- Catalog, scientific configuration, or service unavailable: 503.
+- External timeout: 504.
 
-Una URL malformada dentro del JSON invalida el registro y produce 503 antes de descargar. Una URL sintácticamente válida pero no permitida por el cliente produce 502.
+A malformed URL in the JSON invalidates the snapshot and returns 503 before downloading. A syntactically valid but disallowed URL returns 502 from the client.
 
-TAP/SIA permiten tres intentos para la política definida, con esperas limitadas; 400/401/403/404/422 de SIA se comprobaron sin reintento. El cliente de recortes no repite respuestas HTTP fallidas; configura dos reintentos de conexión en su transporte. No equiparar estas políticas.
+TAP/SIA allow three attempts under the defined policy, with bounded waits; SIA 400/401/403/404/422 responses were verified not to retry. The cutout client does not retry failed HTTP responses; its transport configures two connection retries. These policies are different and should not be conflated.
 
-Timeouts predeterminados: conexión 10 s, lectura 60 s, escritura 10 s y pool 10 s. No son un plazo total de la operación. El proxy Next.js de M101 usa un plazo de 10 s que incluye lectura del cuerpo; ese límite puede vencer antes de que termine un procesamiento lento del backend.
+Default timeouts: connect 10 s, read 60 s, write 10 s, and pool 10 s. These are not a total-operation deadline. The M101 Next.js proxy has a 10-second timeout that includes reading the response body; it can expire before slow backend processing finishes.
 
-Las respuestas públicas usan mensajes genéricos. Puede haber trazas en los logs internos para diagnóstico; no entregarlas al consumidor como cuerpo HTTP.
+Public responses use generic messages. Internal logs may contain diagnostic traces; do not return those traces in HTTP response bodies.

@@ -1,47 +1,44 @@
-# Entrega del trabajo de Kevin — Sphere-X / ÉTER
+# Kevin's Work — Sphere-X / ÉTER
 
-Documentación del trabajo realizado en los servicios, la visualización científica y las pruebas de Sphere-X / ÉTER. No sustituye el README general, la licencia ni las atribuciones del proyecto.
+This documentation describes the work on Sphere-X / ÉTER services, scientific visualization, and tests. It does not replace the project README, license, or attribution notices.
 
-## Cómo usar estos documentos
+## Using these documents
 
-1. [Ejecución local]
-(README_EJECUCION.md).
-2. [Arquitectura, servicios y API](README_SERVICIOS_API.md).
-3. [Datos científicos y reproducibilidad](README_DATOS_CIENTIFICOS.md).
-4. [Pruebas y auditorías K1/K2](README_PRUEBAS.md).
+1. [Local setup](README_EJECUCION.md)
+2. [API architecture and services](README_SERVICIOS_API.md)
+3. [Scientific data and reproducibility](README_DATOS_CIENTIFICOS.md)
+4. [Tests and K1/K2 audits](README_PRUEBAS.md)
 
-Estos documentos se consultan juntos. Los comandos parten de la estructura actual del proyecto y especifican el directorio desde el que deben ejecutarse.
+Read these documents together. Commands assume the repository's current layout and identify the directory from which they should run.
 
-## Trabajo incluido
+## Included work
 
-- Catálogo de objetos: agrupación de observaciones, identificación estable para los datos presentes, búsqueda parcial y detalle.
-- Cliente IRSA/TAP con HTTPX y respuestas normalizadas mediante Pydantic.
-- Cliente SIA para SPHEREx QR2 y QR3, transformación de VOTable y gestión de errores.
-- Registro local de metadatos remotos de M101 obtenido mediante SIA.
-- Descarga controlada de recortes FITS registrados y conversión a PNG.
-- Generación de la figura científica del canal 63 de M101 desde el cubo FITS.
-- Adaptaciones del catálogo frontend para observaciones locales, remotas y vista científica; proxy de Next.js.
-- Auditoría K1 y ampliación de pruebas HTTP K2.
+- Object catalog: observation grouping, stable identifiers for currently available data, partial search, and detail views.
+- IRSA/TAP client using HTTPX, with Pydantic-normalized responses.
+- SIA client for SPHEREx QR2 and QR3, VOTable transformation, and error handling.
+- Local snapshot of remote M101 metadata obtained through SIA.
+- Controlled download of registered FITS cutouts and conversion to PNG.
+- Generation of the M101 channel 63 scientific figure from its FITS cube.
+- Frontend catalog integration for local and remote observations and the scientific preview, plus the Next.js proxy.
+- K1 audit and expanded K2 HTTP tests.
 
-El trabajo reutiliza componentes de Marvin, scripts científicos de Santi y el flujo SIA de Félix. La documentación no atribuye esos componentes originales exclusivamente a Kevin.
+This work reuses components from Marvin, Santi's scientific scripts, and Felix's SIA flow. This documentation does not claim those original components as Kevin's work alone.
 
-## Qué NO implica esta entrega
+## What this delivery does not imply
 
-- No introduce una base de datos, caché avanzada o múltiples proveedores.
-- No implementa una comparación temporal completa ni prueba movimiento astronómico.
-- No garantiza que los productos remotos consultados sean los insumos usados para construir el cubo demostrativo de M101.
-- No incluye credenciales, entornos personales o datos científicos en estos README.
+- It does not add a database, advanced cache, or multiple providers.
+- It does not implement a complete temporal comparison or prove astronomical motion.
+- It does not establish that the queried remote products were used to build the M101 demonstration cube.
+- These README files do not include credentials, personal environments, or scientific data files.
 
-## Estado de verificación
+## Verification status
 
-Rama de trabajo: dev_kevin.
+Working branch reported by Kevin: `dev_kevin`.
 
-- Backend: 248 pruebas aprobadas.
-- Proxy del frontend: siete pruebas aprobadas.
-- Tipos de rutas generados correctamente.
-- Comprobación TypeScript sin errores.
-- Catálogo, observaciones SIMP y visualizaciones M101 comprobados localmente.
+- Backend: 248 tests passed.
+- Frontend proxy: seven tests passed.
+- Next.js route types generated successfully.
+- TypeScript check completed without errors.
+- Catalog, SIMP observations, and M101 visualizations were checked locally.
 
-Los documentos de referencias conservan los hallazgos y comprobaciones
-históricas de K1, K2 y la integración científica. Las propuestas pendientes
-de revisión no deben interpretarse como correcciones implementadas.
+The reference documents retain historical findings and verification details for K1, K2, and the scientific integration. Proposals that remain under review must not be described as implemented fixes.

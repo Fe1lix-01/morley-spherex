@@ -1,24 +1,24 @@
-# Datos científicos y reproducibilidad
+# Scientific Data and Reproducibility
 
-## Tres recursos diferentes
+## Three different resources
 
-1. FITS locales SIMP D1–D6, utilizados por el catálogo y las previsualizaciones locales.
-2. Cubo demostrativo `M101_irsa.fits`, utilizado para generar la figura del canal 63.
-3. Registro JSON de productos remotos SIA asociados espacialmente a M101.
+1. Local SIMP D1–D6 FITS files used by the catalog and local previews.
+2. The `M101_irsa.fits` demonstration cube used to generate the channel 63 figure.
+3. A JSON snapshot of SIA remote products spatially associated with M101.
 
-No tratar estos tres recursos como si fueran el mismo producto o una prueba de movimiento.
+Do not treat these as the same product or as evidence of motion.
 
-## FITS locales SIMP
+## Local SIMP FITS files
 
-Ubicación esperada: `resources/objects/images/fits/`.
+Expected location: `resources/objects/images/fits/`.
 
-El directorio local debe existir para construir el catálogo, incluso si hay datos remotos. Puede estar vacío. Para mostrar SIMP se necesitan sus seis archivos reales en esa ubicación; no crear FITS vacíos para simular imágenes reales.
+This local directory must exist to build the catalog, even when remote data are available. It may be empty. To display SIMP, place its six real files there; do not create empty FITS files to simulate real images.
 
-El `.gitignore` excluye nuevos FITS, pero archivos ya versionados pueden seguir incluidos en Git. Comprobar la situación de los archivos antes de duplicarlos o intentar quitarlos del historial.
+The `.gitignore` excludes new FITS files, but files already tracked may remain in Git. Check their tracking status before copying or attempting to remove them from history.
 
-## Descargar el cubo de M101
+## Download the M101 cube
 
-Desde la raíz del proyecto:
+From the repository root:
 
 ```powershell
 New-Item -ItemType Directory -Path .\data\m101 -Force
@@ -27,38 +27,38 @@ $env:M101_FITS_PATH = (Resolve-Path -LiteralPath ".\data\m101\M101_irsa.fits").P
 Test-Path -LiteralPath $env:M101_FITS_PATH
 ```
 
-La descarga escribe el archivo de destino: si ya existe una copia válida, no hace falta repetirla. No subir el cubo ni un `.env` personal a Git.
+The download writes to the target file. If a valid copy is already present, there is no need to download it again. Do not commit the cube or a personal `.env` file.
 
-Después de iniciar el backend, abrir [la figura de M101](http://127.0.0.1:8000/api/v1/science/m101/channel-63/preview). Genera tres paneles: imagen, cobertura NHITS y máscara de calidad. No se limita a servir un PNG preexistente de outputs.
+After starting the backend, open [the M101 figure](http://127.0.0.1:8000/api/v1/science/m101/channel-63/preview). It generates three panels: image, NHITS coverage, and quality mask. It does not merely serve a pre-existing PNG from `outputs`.
 
-El servicio comprueba extensiones IMAGE, NHITS, FLAGS y SPECTRAL_CHANNELS, dimensiones compatibles, estructura de canales y longitud de onda disponible. Consultar el código y las pruebas para las validaciones completas. Un recurso ausente o un procesamiento rechazado produce el 503 controlado de este endpoint.
+The service checks for the IMAGE, NHITS, FLAGS, and SPECTRAL_CHANNELS extensions, compatible dimensions, channel structure, and available wavelength information. See the code and tests for the full validation rules. A missing resource or rejected processing request returns this endpoint's controlled HTTP 503 response.
 
-## Política FLAGS específica del mosaico
+## FLAGS policy for this mosaic
 
-La documentación científica existente registra la comparación con el encabezado del cubo y [la ayuda oficial del Mosaic Tool de IRSA](https://irsa.ipac.caltech.edu/onlinehelp/spherex/spherex/mosaic.html).
+The existing scientific documentation records comparison with the cube header and [IRSA's official Mosaic Tool help](https://irsa.ipac.caltech.edu/onlinehelp/spherex/spherex/mosaic.html).
 
-Para esta visualización se excluyen los bits de posición 1 y 19, registrados como MP_OVERFLOW y MP_OUTLIER. Se conserva MP_SOURCE (21), se exigen valores IMAGE finitos y NHITS positivo. La decisión es una política exploratoria del proyecto, no una recomendación universal de fotometría.
+For this visualization, bit positions 1 and 19 are excluded; the inspected header identifies them as MP_OVERFLOW and MP_OUTLIER. MP_SOURCE (21) is retained. IMAGE values must be finite and NHITS must be positive. This is an exploratory project display policy, not a universal photometry recommendation.
 
-No aplicar automáticamente todos los `bad_flag_bits` del pipeline ni trasladar esta máscara a otros productos. Las previsualizaciones individuales de los recortes remotos no aplican la máscara del mosaico. Un cambio científico requiere contraste con el producto y revisión del equipo.
+Do not automatically apply every pipeline `bad_flag_bits` value or transfer this mask to other products. Individual remote cutout previews do not apply the mosaic mask. Any scientific change requires checking the relevant product and review by the team.
 
-## Generar el registro remoto
+## Generate the remote snapshot
 
-Con las dependencias del backend instaladas, desde la raíz:
+With backend dependencies installed, run from the repository root:
 
 ```powershell
-.\.venv\Scripts\python.exe .science\targets\consultar_metadatos_m101.py
+.\.venv\Scripts\python.exe .\science\targets\consultar_metadatos_m101.py
 ```
 
-Esta operación sí consulta IRSA. Reutiliza SIA del backend y guarda `data/m101/observations.json` con escritura temporal y reemplazo final. Puede reemplazar una instantánea previa; conservar la versión utilizada si se necesita reproducir exactamente la consulta histórica.
+This operation makes a real IRSA query. It reuses the backend SIA service and saves `data/m101/observations.json` using a temporary file followed by replacement. It can replace an earlier snapshot; preserve the version used if exact reproduction of a historical query is needed.
 
-La consulta implementada solicita QR2, SPHEREx-D4, radio 30 segundos de arco y límite 2, en RA 210.8022671 / Dec 54.34895. Registra fecha de consulta, procedencia de la posición, colección, productos, fechas y URLs.
+The implemented query requests QR2, SPHEREx-D4, a 30-arcsecond radius, and a limit of 2 at RA 210.8022671 / Dec 54.34895. It records the query time, position provenance, collection, products, dates, and URLs.
 
-La relación documentada es **intersección espacial**: la cobertura intersecta el círculo consultado. No prueba por sí sola una detección del objeto ni que esas exposiciones construyeran el cubo demostrativo.
+The documented association is **spatial intersection**: the image coverage intersects the queried circle. This alone does not prove detection of the object or that those exposures were used to build the demonstration cube.
 
-Si el registro no existe, no se añaden observaciones remotas. Si existe pero es inválido, el catálogo devuelve un error controlado. No insertar M101 manualmente para ocultar la ausencia del registro.
+If the snapshot is absent, no remote observations are added. If it is present but invalid, the catalog returns a controlled error. Do not insert M101 manually to hide a missing snapshot.
 
-## Datos y pruebas
+## Data and tests
 
-Los FITS sintéticos de las pruebas sirven para validar estructura, máscaras y PNG de manera repetible; no representan observaciones reales. Algunas pruebas de integración local pueden depender de los FITS de SIMP. La generación sintética de M101 se prueba sin descargar el cubo real ni requerir M101_FITS_PATH.
+Synthetic FITS files in tests validate structure, masks, and PNG generation reproducibly; they are not real observations. Some local integration tests may depend on SIMP FITS files. M101's synthetic FITS tests run without downloading the real cube or setting `M101_FITS_PATH`.
 
-Los recursos ignorados no se incluyen automáticamente al clonar el repositorio. Prepararlos según las ubicaciones y las instrucciones anteriores.
+Ignored resources are not automatically included when cloning the repository. Prepare them using the locations and instructions above.

@@ -1,28 +1,28 @@
-# Ejecutar backend y frontend
+# Running the Backend and Frontend
 
-Los comandos siguientes son para PowerShell y parten de la raíz del repositorio que contenga `apps`, `labs`, `resources` y `data`. Mantener dos terminales abiertas.
+The following PowerShell commands start from the repository root, which contains `apps`, `resources`, and `data`. Keep two terminals open.
 
-## Dependencias
+## Dependencies
 
-El backend se comprobó localmente con Python 3.14. Para el frontend se
-requieren Node.js y npm compatibles con las versiones del proyecto.
+The backend was checked locally with Python 3.14. The frontend requires Node.js and npm compatible with the versions in the project manifests.
 
-Utilizar los manifiestos del proyecto para instalar las dependencias:
+Use the project manifests to install dependencies:
 
 - Backend: `apps/science-api/requirements.txt`.
-- Frontend: `labs/frontend/aladin-test/package.json` y `package-lock.json`.
-- Núcleo científico completo: `pyproject.toml`; no es necesario instalarlo para iniciar exclusivamente esta API.
+- Frontend: `apps/web/package.json` and `package-lock.json`.
 
-HTTPX se usa en los clientes de producción. HTTPX2 está incluido para el TestClient de Starlette, según la verificación registrada del proyecto. No sustituir uno por otro sin comprobar versiones.
+HTTPX is used by the production clients. HTTPX2 is included for Starlette's TestClient, according to the project's recorded verification. Do not substitute one for the other without checking compatibility.
 
-## Terminal 1 — backend
+## Terminal 1 — Backend
+
+From the repository root:
 
 ```powershell
 py -3.14 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r .\apps\science-api\requirements.txt
 ```
 
-Preparar el FITS y el directorio del catálogo según [Datos científicos](README_DATOS_CIENTIFICOS.md). Para la figura M101:
+Prepare the FITS cube and catalog directory as described in [Scientific data](README_DATOS_CIENTIFICOS.md). For the M101 figure:
 
 ```powershell
 $env:M101_FITS_PATH = (Resolve-Path -LiteralPath ".\data\m101\M101_irsa.fits").Path
@@ -31,34 +31,29 @@ cd .\apps\science-api
 ..\..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
-`M101_FITS_PATH` pertenece a esta sesión. Se puede iniciar la API sin esa variable, pero la vista científica responderá HTTP 503. La raíz `/` no tiene por qué existir: un HTTP 404 allí no significa que el servidor esté detenido.
+`M101_FITS_PATH` applies to the current PowerShell session. The API can start without it, but the scientific preview will return HTTP 503. The root path `/` does not have to exist; HTTP 404 there does not mean the server is down.
 
-- Swagger: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
-- Health: [http://127.0.0.1:8000/api/v1/health](http://127.0.0.1:8000/api/v1/health).
+- Swagger: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+- Health: [http://127.0.0.1:8000/api/v1/health](http://127.0.0.1:8000/api/v1/health)
 
-## Terminal 2 — frontend
+## Terminal 2 — Frontend
 
-Desde la raíz:
+From the repository root:
 
 ```powershell
-cd .\labs\frontend\aladin-test
+cd .\apps\web
 npm ci
 $env:SCIENCE_API_URL = "http://127.0.0.1:8000"
 $env:NEXT_PUBLIC_API_URL = "http://127.0.0.1:8000/api/v1"
 npm run dev
 ```
 
-Abrir [http://localhost:3000/catalog](http://localhost:3000/catalog). Si Next utiliza otro puerto, revisar la salida y los orígenes CORS del backend.
+Open [http://localhost:3000/catalog](http://localhost:3000/catalog). If Next.js chooses another port, check its terminal output and the backend's CORS origins.
 
-`SCIENCE_API_URL` se utiliza en el servidor Next.js para el proxy de M101. `NEXT_PUBLIC_API_URL` se utiliza desde el navegador para las demás consultas. Reiniciar el frontend después de cambiar estas variables. La existencia del filtro `q` en la API no implica una caja de búsqueda en el catálogo actual.
+`SCIENCE_API_URL` is used on the Next.js server for the M101 proxy. `NEXT_PUBLIC_API_URL` is used by the browser for other API requests. Restart the frontend after changing either variable. The API's `q` filter does not imply that the current catalog UI has a search box.
 
-## Servicios en equipos diferentes
+## Services on separate machines
 
-Configurar SCIENCE_API_URL con una dirección del backend accesible
-desde el servidor Next.js.
+Set `SCIENCE_API_URL` to an address reachable from the Next.js server. Set `NEXT_PUBLIC_API_URL` to an address reachable from the user's browser, and configure the backend's CORS origins as needed.
 
-Configurar NEXT_PUBLIC_API_URL con una dirección accesible desde el
-navegador. Ajustar los orígenes CORS del backend según corresponda.
-
-La ejecución verificada para esta entrega es local. No se comprobó
-un despliegue en servidores remotos.
+This delivery was verified locally. Deployment to remote servers was not verified.
