@@ -1,0 +1,29 @@
+# Framework para construir la API REST.
+fastapi==0.162.0
+
+# Validación y serialización de datos.
+pydantic==2.14.1
+
+# Servidor ASGI.
+uvicorn==0.54.0
+
+# Cliente HTTP para servicios externos.
+httpx==0.28.1
+
+# Procesamiento de archivos astronómicos FITS.
+astropy==8.0.2
+
+# Pruebas automatizadas.
+pytest==9.1.1
+
+# Operaciones numéricas sobre matrices.
+numpy==2.5.4
+
+# Generación de imágenes PNG.
+Pillow==13.0.0
+
+# Generación de figuras científicas.
+matplotlib==3.11.2
+
+# Cliente HTTP utilizado por Starlette TestClient en las pruebas.
+httpx2==2.13.0
