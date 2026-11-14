@@ -5,7 +5,7 @@ import Box from "@mui/material/Box";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import PreviewPanel from "@/components/preview/PreviewPanel";
-import SkyComparison from "@/components/sky/SkyComparison";
+import SpherexMosaic from "./SpherexMosaic";
 
 type Visor = "eter" | "spherex";
 
@@ -41,7 +41,7 @@ export default function ViewerSwitch() {
         </ToggleButtonGroup>
       </Box>
 
-      {visor === "eter" ? <PreviewPanel /> : <SkyComparison />}
+      {visor === "eter" ? <PreviewPanel /> : <SpherexMosaic />}
     </>
   );
 }
