@@ -1,0 +1,983 @@
+{
+  "schema_version": "morley.traceback.v1",
+  "project": "ETER / MORLEY Frontier",
+  "generated_at_utc": "2026-11-14T19:02:01.623412+00:00",
+  "target": {
+    "ra_deg": 295.4097841,
+    "dec_deg": -15.2231692,
+    "radius_arcsec": 30.0,
+    "coordinate_frame": "ICRS"
+  },
+  "cube": {
+    "source": "SPHEREx DR1 HiPS",
+    "evidence_type": "visualization",
+    "hips_url": "https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube",
+    "hips_properties_url": "https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube/properties",
+    "tile": {
+      "healpix_order": 5,
+      "nside": 32,
+      "nested_pixel": 7428,
+      "fits_url": "https://irsa.ipac.caltech.edu/ibe/data/spherex/dr1/hips5_cube/hips_20261026/Norder5/Dir0/Npix7428_cube.fits"
+    },
+    "channel_count": 102,
+    "blank_channel_indices": [
+      50,
+      51
+    ],
+    "channels": [
+      {
+        "index": 0,
+        "number": 1,
+        "band": 1,
+        "detector_channel": 1,
+        "wavelength_um": 0.753,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 1,
+        "number": 2,
+        "band": 1,
+        "detector_channel": 2,
+        "wavelength_um": 0.771,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 2,
+        "number": 3,
+        "band": 1,
+        "detector_channel": 3,
+        "wavelength_um": 0.79,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 3,
+        "number": 4,
+        "band": 1,
+        "detector_channel": 4,
+        "wavelength_um": 0.809,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 4,
+        "number": 5,
+        "band": 1,
+        "detector_channel": 5,
+        "wavelength_um": 0.828,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 5,
+        "number": 6,
+        "band": 1,
+        "detector_channel": 6,
+        "wavelength_um": 0.848,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 6,
+        "number": 7,
+        "band": 1,
+        "detector_channel": 7,
+        "wavelength_um": 0.868,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 7,
+        "number": 8,
+        "band": 1,
+        "detector_channel": 8,
+        "wavelength_um": 0.889,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 8,
+        "number": 9,
+        "band": 1,
+        "detector_channel": 9,
+        "wavelength_um": 0.91,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 9,
+        "number": 10,
+        "band": 1,
+        "detector_channel": 10,
+        "wavelength_um": 0.932,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 10,
+        "number": 11,
+        "band": 1,
+        "detector_channel": 11,
+        "wavelength_um": 0.955,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 11,
+        "number": 12,
+        "band": 1,
+        "detector_channel": 12,
+        "wavelength_um": 0.978,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 12,
+        "number": 13,
+        "band": 1,
+        "detector_channel": 13,
+        "wavelength_um": 1.001,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 13,
+        "number": 14,
+        "band": 1,
+        "detector_channel": 14,
+        "wavelength_um": 1.025,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 14,
+        "number": 15,
+        "band": 1,
+        "detector_channel": 15,
+        "wavelength_um": 1.05,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 15,
+        "number": 16,
+        "band": 1,
+        "detector_channel": 16,
+        "wavelength_um": 1.075,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 16,
+        "number": 17,
+        "band": 1,
+        "detector_channel": 17,
+        "wavelength_um": 1.102,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 17,
+        "number": 18,
+        "band": 2,
+        "detector_channel": 1,
+        "wavelength_um": 1.113,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 18,
+        "number": 19,
+        "band": 2,
+        "detector_channel": 2,
+        "wavelength_um": 1.139,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 19,
+        "number": 20,
+        "band": 2,
+        "detector_channel": 3,
+        "wavelength_um": 1.167,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 20,
+        "number": 21,
+        "band": 2,
+        "detector_channel": 4,
+        "wavelength_um": 1.195,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 21,
+        "number": 22,
+        "band": 2,
+        "detector_channel": 5,
+        "wavelength_um": 1.224,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 22,
+        "number": 23,
+        "band": 2,
+        "detector_channel": 6,
+        "wavelength_um": 1.254,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 23,
+        "number": 24,
+        "band": 2,
+        "detector_channel": 7,
+        "wavelength_um": 1.284,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 24,
+        "number": 25,
+        "band": 2,
+        "detector_channel": 8,
+        "wavelength_um": 1.315,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 25,
+        "number": 26,
+        "band": 2,
+        "detector_channel": 9,
+        "wavelength_um": 1.346,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 26,
+        "number": 27,
+        "band": 2,
+        "detector_channel": 10,
+        "wavelength_um": 1.378,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 27,
+        "number": 28,
+        "band": 2,
+        "detector_channel": 11,
+        "wavelength_um": 1.412,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 28,
+        "number": 29,
+        "band": 2,
+        "detector_channel": 12,
+        "wavelength_um": 1.446,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 29,
+        "number": 30,
+        "band": 2,
+        "detector_channel": 13,
+        "wavelength_um": 1.481,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 30,
+        "number": 31,
+        "band": 2,
+        "detector_channel": 14,
+        "wavelength_um": 1.517,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 31,
+        "number": 32,
+        "band": 2,
+        "detector_channel": 15,
+        "wavelength_um": 1.554,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 32,
+        "number": 33,
+        "band": 2,
+        "detector_channel": 16,
+        "wavelength_um": 1.592,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 33,
+        "number": 34,
+        "band": 2,
+        "detector_channel": 17,
+        "wavelength_um": 1.631,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 34,
+        "number": 35,
+        "band": 3,
+        "detector_channel": 1,
+        "wavelength_um": 1.656,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 35,
+        "number": 36,
+        "band": 3,
+        "detector_channel": 2,
+        "wavelength_um": 1.695,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 36,
+        "number": 37,
+        "band": 3,
+        "detector_channel": 3,
+        "wavelength_um": 1.735,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 37,
+        "number": 38,
+        "band": 3,
+        "detector_channel": 4,
+        "wavelength_um": 1.775,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 38,
+        "number": 39,
+        "band": 3,
+        "detector_channel": 5,
+        "wavelength_um": 1.818,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 39,
+        "number": 40,
+        "band": 3,
+        "detector_channel": 6,
+        "wavelength_um": 1.861,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 40,
+        "number": 41,
+        "band": 3,
+        "detector_channel": 7,
+        "wavelength_um": 1.905,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 41,
+        "number": 42,
+        "band": 3,
+        "detector_channel": 8,
+        "wavelength_um": 1.949,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 42,
+        "number": 43,
+        "band": 3,
+        "detector_channel": 9,
+        "wavelength_um": 1.995,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 43,
+        "number": 44,
+        "band": 3,
+        "detector_channel": 10,
+        "wavelength_um": 2.041,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 44,
+        "number": 45,
+        "band": 3,
+        "detector_channel": 11,
+        "wavelength_um": 2.089,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 45,
+        "number": 46,
+        "band": 3,
+        "detector_channel": 12,
+        "wavelength_um": 2.139,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 46,
+        "number": 47,
+        "band": 3,
+        "detector_channel": 13,
+        "wavelength_um": 2.189,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 47,
+        "number": 48,
+        "band": 3,
+        "detector_channel": 14,
+        "wavelength_um": 2.24,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 48,
+        "number": 49,
+        "band": 3,
+        "detector_channel": 15,
+        "wavelength_um": 2.292,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 49,
+        "number": 50,
+        "band": 3,
+        "detector_channel": 16,
+        "wavelength_um": 2.345,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 50,
+        "number": 51,
+        "band": 3,
+        "detector_channel": 17,
+        "wavelength_um": 2.399,
+        "has_data": false,
+        "axis": "wavelength"
+      },
+      {
+        "index": 51,
+        "number": 52,
+        "band": 4,
+        "detector_channel": 1,
+        "wavelength_um": 2.445,
+        "has_data": false,
+        "axis": "wavelength"
+      },
+      {
+        "index": 52,
+        "number": 53,
+        "band": 4,
+        "detector_channel": 2,
+        "wavelength_um": 2.506,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 53,
+        "number": 54,
+        "band": 4,
+        "detector_channel": 3,
+        "wavelength_um": 2.575,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 54,
+        "number": 55,
+        "band": 4,
+        "detector_channel": 4,
+        "wavelength_um": 2.646,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 55,
+        "number": 56,
+        "band": 4,
+        "detector_channel": 5,
+        "wavelength_um": 2.719,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 56,
+        "number": 57,
+        "band": 4,
+        "detector_channel": 6,
+        "wavelength_um": 2.794,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 57,
+        "number": 58,
+        "band": 4,
+        "detector_channel": 7,
+        "wavelength_um": 2.871,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 58,
+        "number": 59,
+        "band": 4,
+        "detector_channel": 8,
+        "wavelength_um": 2.951,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 59,
+        "number": 60,
+        "band": 4,
+        "detector_channel": 9,
+        "wavelength_um": 3.033,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 60,
+        "number": 61,
+        "band": 4,
+        "detector_channel": 10,
+        "wavelength_um": 3.118,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 61,
+        "number": 62,
+        "band": 4,
+        "detector_channel": 11,
+        "wavelength_um": 3.204,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 62,
+        "number": 63,
+        "band": 4,
+        "detector_channel": 12,
+        "wavelength_um": 3.293,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 63,
+        "number": 64,
+        "band": 4,
+        "detector_channel": 13,
+        "wavelength_um": 3.383,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 64,
+        "number": 65,
+        "band": 4,
+        "detector_channel": 14,
+        "wavelength_um": 3.476,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 65,
+        "number": 66,
+        "band": 4,
+        "detector_channel": 15,
+        "wavelength_um": 3.57,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 66,
+        "number": 67,
+        "band": 4,
+        "detector_channel": 16,
+        "wavelength_um": 3.667,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 67,
+        "number": 68,
+        "band": 4,
+        "detector_channel": 17,
+        "wavelength_um": 3.768,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 68,
+        "number": 69,
+        "band": 5,
+        "detector_channel": 1,
+        "wavelength_um": 3.833,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 69,
+        "number": 70,
+        "band": 5,
+        "detector_channel": 2,
+        "wavelength_um": 3.867,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 70,
+        "number": 71,
+        "band": 5,
+        "detector_channel": 3,
+        "wavelength_um": 3.901,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 71,
+        "number": 72,
+        "band": 5,
+        "detector_channel": 4,
+        "wavelength_um": 3.935,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 72,
+        "number": 73,
+        "band": 5,
+        "detector_channel": 5,
+        "wavelength_um": 3.97,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 73,
+        "number": 74,
+        "band": 5,
+        "detector_channel": 6,
+        "wavelength_um": 4.005,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 74,
+        "number": 75,
+        "band": 5,
+        "detector_channel": 7,
+        "wavelength_um": 4.04,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 75,
+        "number": 76,
+        "band": 5,
+        "detector_channel": 8,
+        "wavelength_um": 4.076,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 76,
+        "number": 77,
+        "band": 5,
+        "detector_channel": 9,
+        "wavelength_um": 4.112,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 77,
+        "number": 78,
+        "band": 5,
+        "detector_channel": 10,
+        "wavelength_um": 4.148,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 78,
+        "number": 79,
+        "band": 5,
+        "detector_channel": 11,
+        "wavelength_um": 4.184,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 79,
+        "number": 80,
+        "band": 5,
+        "detector_channel": 12,
+        "wavelength_um": 4.22,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 80,
+        "number": 81,
+        "band": 5,
+        "detector_channel": 13,
+        "wavelength_um": 4.257,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 81,
+        "number": 82,
+        "band": 5,
+        "detector_channel": 14,
+        "wavelength_um": 4.294,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 82,
+        "number": 83,
+        "band": 5,
+        "detector_channel": 15,
+        "wavelength_um": 4.331,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 83,
+        "number": 84,
+        "band": 5,
+        "detector_channel": 16,
+        "wavelength_um": 4.368,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 84,
+        "number": 85,
+        "band": 5,
+        "detector_channel": 17,
+        "wavelength_um": 4.405,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 85,
+        "number": 86,
+        "band": 6,
+        "detector_channel": 1,
+        "wavelength_um": 4.435,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 86,
+        "number": 87,
+        "band": 6,
+        "detector_channel": 2,
+        "wavelength_um": 4.467,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 87,
+        "number": 88,
+        "band": 6,
+        "detector_channel": 3,
+        "wavelength_um": 4.5,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 88,
+        "number": 89,
+        "band": 6,
+        "detector_channel": 4,
+        "wavelength_um": 4.533,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 89,
+        "number": 90,
+        "band": 6,
+        "detector_channel": 5,
+        "wavelength_um": 4.566,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 90,
+        "number": 91,
+        "band": 6,
+        "detector_channel": 6,
+        "wavelength_um": 4.6,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 91,
+        "number": 92,
+        "band": 6,
+        "detector_channel": 7,
+        "wavelength_um": 4.635,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 92,
+        "number": 93,
+        "band": 6,
+        "detector_channel": 8,
+        "wavelength_um": 4.669,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 93,
+        "number": 94,
+        "band": 6,
+        "detector_channel": 9,
+        "wavelength_um": 4.704,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 94,
+        "number": 95,
+        "band": 6,
+        "detector_channel": 10,
+        "wavelength_um": 4.739,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 95,
+        "number": 96,
+        "band": 6,
+        "detector_channel": 11,
+        "wavelength_um": 4.773,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 96,
+        "number": 97,
+        "band": 6,
+        "detector_channel": 12,
+        "wavelength_um": 4.808,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 97,
+        "number": 98,
+        "band": 6,
+        "detector_channel": 13,
+        "wavelength_um": 4.843,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 98,
+        "number": 99,
+        "band": 6,
+        "detector_channel": 14,
+        "wavelength_um": 4.879,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 99,
+        "number": 100,
+        "band": 6,
+        "detector_channel": 15,
+        "wavelength_um": 4.915,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 100,
+        "number": 101,
+        "band": 6,
+        "detector_channel": 16,
+        "wavelength_um": 4.951,
+        "has_data": true,
+        "axis": "wavelength"
+      },
+      {
+        "index": 101,
+        "number": 102,
+        "band": 6,
+        "detector_channel": 17,
+        "wavelength_um": 4.988,
+        "has_data": true,
+        "axis": "wavelength"
+      }
+    ],
+    "axis_type": "spectral",
+    "temporal_axis": false,
+    "use": "sky_exploration"
+  },
+  "level2": {
+    "status": "service_error",
+    "method": "IRSA_TAP",
+    "detector_filter": "SPHEREx-D6",
+    "error": "502 Server Error: Proxy Error for url: https://irsa.ipac.caltech.edu/TAP/sync",
+    "total": null,
+    "returned": 0,
+    "truncated": false,
+    "observations": []
+  },
+  "temporal_analysis": {
+    "ready_for_zogy": false,
+    "status": "requires_independent_compatible_epochs",
+    "required_checks": [
+      "Independent observation dates",
+      "Same sky region",
+      "Compatible spectral response",
+      "Valid FLAGS and VARIANCE",
+      "WCS alignment",
+      "Photometric normalization",
+      "Appropriate ePSF",
+      "Background and noise model"
+    ]
+  },
+  "scientific_integrity": {
+    "motion_detected": false,
+    "analysis_executed": false,
+    "simulation": false,
+    "data_discovery_only": true,
+    "cube_is_not_temporal": true,
+    "source_switching_requires_label": true
+  }
+}
