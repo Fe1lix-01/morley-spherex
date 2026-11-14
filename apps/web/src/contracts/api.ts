@@ -104,3 +104,38 @@ export interface ObservationsResponse {
   total: number;
   observations: Observation[];
 }
+export type SiaCollection = "spherex_qr2" | "spherex_qr3";
+
+export type SpherexBand =
+  | "SPHEREx-D1"
+  | "SPHEREx-D2"
+  | "SPHEREx-D3"
+  | "SPHEREx-D4"
+  | "SPHEREx-D5"
+  | "SPHEREx-D6";
+
+export interface SiaSearchParams {
+  ra: number;
+  dec: number;
+  radiusArcsec?: number;
+  band?: SpherexBand;
+  collection?: SiaCollection;
+  limit?: number;
+}
+
+export interface SiaQuery {
+  collection: SiaCollection;
+  ra: number;
+  dec: number;
+  radius_arcsec: number;
+  band: SpherexBand;
+  limit: number;
+}
+
+export interface SiaResponse {
+  source: "IRSA SIA";
+  collection: SiaCollection;
+  query: SiaQuery;
+  count: number;
+  observations: RemoteObservation[];
+}
