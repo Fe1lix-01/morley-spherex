@@ -1,0 +1,128 @@
+"use client";
+
+import Box from "@mui/material/Box";
+import IconButton from "@mui/material/IconButton";
+import Slider from "@mui/material/Slider";
+import Typography from "@mui/material/Typography";
+import PauseRoundedIcon from "@mui/icons-material/PauseRounded";
+import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
+import type { Epoch } from "@/data/contracts";
+import SegmentedControl from "@/components/ui/SegmentedControl";
+import { eter, glassPanel, selectedRing } from "@/lib/theme";
+import { glowSliderParts } from "@/lib/glow";
+import { dateAt } from "@/lib/model/trajectory";
+
+/* ------------------------------------------------------------------ */
+/* ModeToggle: mosaico del cielo / épocas simuladas                    */
+/* ------------------------------------------------------------------ */
+
+export type ViewMode = "sky" | "epochs";
+
+const MODE_OPTIONS = [
+  { value: "sky", label: "Mosaico del cielo" },
+  { value: "epochs", label: "Épocas simuladas" },
+] as const;
+
+/** Cambia entre el mosaico del cielo (Aladin) y las épocas simuladas con animación. */
+export function ModeToggle({ value, onChange }: { value: ViewMode; onChange: (mode: ViewMode) => void }) {
+  return (
+    <SegmentedControl
+      value={value}
+      onChange={onChange}
+      options={MODE_OPTIONS}
+      ariaLabel="Modo de vista"
+      sx={{ alignSelf: "flex-start", bgcolor: eter.panelGlass, backdropFilter: "blur(10px)" }}
+    />
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* PlaybackBar: barra de reproducción                                  */
+/* ------------------------------------------------------------------ */
+
+type PlaybackBarProps = {
+  epochs: Epoch[];
+  t: number;
+  playing: boolean;
+  speed: number;
+  onToggle: () => void;
+  onSeek: (t: number) => void;
+  onSpeed: (speed: number) => void;
+};
+
+const SPEEDS = [0.5, 1, 2].map((s) => ({ value: s, label: `${s}×` }));
+
+/** Barra de reproducción: play/pausa, línea de tiempo con las épocas, fecha y velocidad. */
+export default function PlaybackBar({ epochs, t, playing, speed, onToggle, onSeek, onSpeed }: PlaybackBarProps) {
+  const last = Math.max(epochs.length - 1, 0);
+  const p = last > 0 ? t / last : 0; // avance de 0 a 1, para la intensidad del brillo
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: { xs: 1, sm: 2 },
+        px: 2,
+        pt: 1,
+        pb: 0.5,
+        color: "#fff",
+        ...glassPanel,
+        borderRadius: 3,
+        maxWidth: { lg: 680 }, // para que no quede debajo del recuadro del candidato
+      }}
+    >
+      <IconButton
+        aria-label={playing ? "Pausar" : "Reproducir"}
+        onClick={onToggle}
+        sx={{
+          width: 40,
+          height: 40,
+          // Mismo tratamiento que los seleccionados: sin relleno, aro de luz completo.
+          // El aro gira mientras se reproduce y se queda quieto en pausa.
+          ...selectedRing("0px", "50%", playing),
+          color: "#fff", // mismo color que el destello del borde
+          bgcolor: "transparent",
+          "&:hover": { bgcolor: eter.hoverFill },
+        }}
+      >
+        {playing ? <PauseRoundedIcon /> : <PlayArrowRoundedIcon />}
+      </IconButton>
+
+      <Box sx={{ flex: 1, minWidth: 0, px: 1.5, pb: 1.5 }}>
+        <Slider
+          size="small"
+          aria-label="Línea de tiempo"
+          min={0}
+          max={last}
+          step={0.001}
+          value={t}
+          onChange={(_, value) => onSeek(value as number)}
+          marks={epochs.map((e, i) => ({ value: i, label: e.label }))}
+          sx={{
+            // Sin transición: el valor cambia en cada fotograma y, con la transición de MUI,
+            // la bolita se queda rezagada respecto a la fecha y al marcador.
+            "& .MuiSlider-thumb, & .MuiSlider-track": { transition: "none" },
+            // Mismo estilo que los sliders del panel; el aro gira mientras se reproduce.
+            ...glowSliderParts(p, playing),
+            "& .MuiSlider-markLabel": { color: eter.textFaint, fontSize: 11 },
+            "& .MuiSlider-mark": { bgcolor: eter.lineHover },
+          }}
+        />
+      </Box>
+
+      <Typography sx={{ fontFamily: "monospace", fontSize: 13, minWidth: 84, textAlign: "right", color: "#fff" }}>
+        {dateAt(epochs, t)}
+      </Typography>
+
+      <SegmentedControl
+        value={speed}
+        onChange={onSpeed}
+        options={SPEEDS}
+        ariaLabel="Velocidad"
+        size="sm"
+        sx={{ display: { xs: "none", sm: "flex" }, mb: 0.5 }}
+      />
+    </Box>
+  );
+}
