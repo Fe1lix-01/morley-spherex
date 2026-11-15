@@ -7,6 +7,9 @@ import type { AladinInstance } from "aladin-lite";
 import AnimatedButton from "@/components/ui/AnimatedButton";
 import SegmentedControl from "@/components/ui/SegmentedControl";
 import { eter, glassPanel } from "@/lib/theme";
+import type { HiPSLayer } from "aladin-lite";
+import SpherexChannelSelector from "./SpherexChannelSelector";
+import { getSpherexChannel } from "@/data/spherexChannels";
 
 type SkySource = "allwise" | "spherex";
 
@@ -43,6 +46,9 @@ export default function SpherexMosaic() {
   const [ready, setReady] = useState(false);
   const [source, setSource] = useState<SkySource>("allwise");
   const [status, setStatus] = useState("Iniciando Aladin Lite...");
+  const [channel, setChannel] = useState(62);
+  const spherexLayerRef = useRef<HiPSLayer | null>(null);
+  const sourceRef = useRef<SkySource>("allwise");
 
   useEffect(() => {
     let cancelled = false;
@@ -82,12 +88,53 @@ export default function SpherexMosaic() {
     };
   }, []);
 
+  useEffect(() => {
+  if (source !== "spherex") return;
+
+  const layer = spherexLayerRef.current;
+  if (!layer) return;
+
+  const info = getSpherexChannel(channel);
+
+  if (!info.valid) {
+    return;
+  }
+
+  const timer = window.setTimeout(() => {
+    if (
+      sourceRef.current !== "spherex" ||
+      spherexLayerRef.current !== layer
+    ) {
+      return;
+    }
+
+    try {
+      layer.setFrequency({
+        value: info.wavelengthUm * 1e-6,
+        unit: "m",
+      });
+
+      setStatus(
+        `Canal ${channel} · B${info.band} · ` +
+          `${info.wavelengthUm.toFixed(3)} µm solicitado`
+      );
+    } catch (error) {
+      console.error("Error al cambiar el canal:", error);
+      setStatus("No se pudo cambiar el canal espectral.");
+    }
+  }, 120);
+
+  return () => window.clearTimeout(timer);
+}, [channel, source]);
+
   async function changeSource(next: SkySource) {
     const aladin = aladinRef.current;
     if (!aladin) return;
 
     try {
       if (next === "allwise") {
+        sourceRef.current = "allwise";
+        spherexLayerRef.current = null;
         aladin.setBaseImageLayer(SURVEYS.allwise);
         setSource("allwise");
         setStatus("AllWISE seleccionado.");
@@ -102,10 +149,23 @@ export default function SpherexMosaic() {
         name: "SPHEREx DR1",
         imgFormat: "png",
         successCallback: (layer) => {
-          // Se evitan los canales 50 y 51, documentados como vacíos.
-          layer.setSliceNumber(62);
-          setStatus("SPHEREx DR1: canal 62 solicitado. Revisando tiles...");
-        },
+  if (sourceRef.current !== "spherex") return;
+
+  spherexLayerRef.current = layer;
+
+  const info = getSpherexChannel(channel);
+
+  if (info.valid) {
+    layer.setFrequency({
+      value: info.wavelengthUm * 1e-6,
+      unit: "m",
+    });
+
+    setStatus(
+      `SPHEREx DR1: canal ${channel} solicitado.`
+    );
+  }
+},
         errorCallback: (error) => {
           console.error("Falló la carga de SPHEREx:", error);
           setStatus("No se pudo cargar SPHEREx HiPS.");
@@ -113,6 +173,8 @@ export default function SpherexMosaic() {
       });
 
       setStatus("Cargando SPHEREx DR1...");
+      sourceRef.current = "spherex";
+    spherexLayerRef.current = null;
       aladin.setBaseImageLayer(spherexHiPS);
       setSource("spherex");
     } catch (error) {
@@ -160,19 +222,24 @@ export default function SpherexMosaic() {
 
       <Box
         sx={{
-          ...glassPanel,
-          position: "fixed",
-          bottom: 24,
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: "min(92vw, 560px)",
-          p: 2,
-          borderRadius: "16px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 1.5,
-          opacity: ready ? 1 : 0.7,
-        }}
+  ...glassPanel,
+  position: "fixed",
+  top: "auto",
+  left: { xs: 12, md: 24 },
+  right: "auto",
+  bottom: { xs: 16, md: 24 },
+  transform: "none",
+  width: { xs: "calc(100vw - 24px)", md: 340 },
+  maxHeight: { xs: "35dvh", md: "calc(100dvh - 104px)" },
+  overflowY: "auto",
+  p: 2,
+  borderRadius: "16px",
+  display: "flex",
+  flexDirection: "column",
+  gap: 1.5,
+  opacity: ready ? 1 : 0.7,
+  zIndex: 10,
+}}
       >
         <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
           <Typography sx={eyebrowSx}>Fuente</Typography>
@@ -207,6 +274,54 @@ export default function SpherexMosaic() {
           </Typography>
         </Box>
       </Box>
+      {source === "spherex" && (
+  <Box
+    sx={{
+      ...glassPanel,
+      position: "fixed",
+      top: "auto",
+      left: "auto",
+      right: { xs: 12, md: 24 },
+      bottom: { xs: 16, md: 24 },
+      transform: "none",
+      width: { xs: "calc(100vw - 24px)", md: 390 },
+      maxHeight: {
+        xs: "42dvh",
+        md: "calc(100dvh - 104px)",
+      },
+      overflowY: "auto",
+      p: 2.5,
+      borderRadius: "16px",
+      zIndex: 10,
+    }}
+  >
+    <Typography
+      sx={{
+        fontSize: 14,
+        fontWeight: 600,
+        mb: 2,
+        color: "#fff",
+      }}
+    >
+      Selector espectral SPHEREx DR1
+    </Typography>
+
+    <SpherexChannelSelector
+      channel={channel}
+      onChange={(nextChannel) => {
+        setChannel(nextChannel);
+
+        if (nextChannel === 51 || nextChannel === 52) {
+          setStatus(
+            `Canal ${nextChannel}: sin datos válidos en DR1. ` +
+              "Se conserva la última imagen disponible."
+          );
+        }
+      }}
+      disabled={!ready}
+    />
+  </Box>
+)}
     </Box>
   );
 }
