@@ -1,0 +1,4 @@
+# Compatible con Python 3.10 - 3.13 (preferido: Python 3.11/3.12)
+numpy>=1.26,<3
+astropy>=6,<9
+requests>=2.31,<3
