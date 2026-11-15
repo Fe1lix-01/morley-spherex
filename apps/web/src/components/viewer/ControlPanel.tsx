@@ -238,6 +238,8 @@ type Props = {
   onDemo: () => void;
   onHelp: () => void;
   isDemo: boolean;
+  /** Apila los sliders y los botones en filas separadas, para cuando el panel va en una columna angosta. */
+  stacked?: boolean;
 };
 
 export default function ControlPanel({
@@ -253,6 +255,7 @@ export default function ControlPanel({
   onDemo,
   onHelp,
   isDemo,
+  stacked = false,
 }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -286,9 +289,10 @@ export default function ControlPanel({
       <Box
         sx={{
           display: "flex",
-          flexDirection: { xs: "column", sm: "row" },
-          alignItems: { xs: "stretch", sm: "center" },
-          gap: { xs: 1, sm: 2.5 },
+          // En modo apilado siempre va en columna, sin importar el ancho de la pantalla.
+          flexDirection: stacked ? "column" : { xs: "column", sm: "row" },
+          alignItems: stacked ? "stretch" : { xs: "stretch", sm: "center" },
+          gap: stacked ? 1 : { xs: 1, sm: 2.5 },
         }}
       >
         {/* Sliders */}
