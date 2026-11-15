@@ -7,7 +7,7 @@ import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
-
+import IconButton from "@mui/material/IconButton";
 import type { Epoch, Frame, MovingObject } from "@/data/contracts";
 import type { RemoteObservation, SiaResponse } from "@/contracts/api";
 import { eterApiService } from "@/services/eter-api";
@@ -560,15 +560,33 @@ export default function PreviewPanel() {
               component="section"
               aria-label="Resultados de observaciones SPHEREx"
               sx={{
+                position: "relative",
+                mb: { lg: 3 },
                 p: 2,
+                pr: 6,
                 borderRadius: 2,
-                border:
-                  "1px solid rgba(255,255,255,0.2)",
-                backgroundColor:
-                  "rgba(10,15,30,0.88)",
+                border: "1px solid rgba(255,255,255,0.2)",
+                backgroundColor: "rgba(10,15,30,0.88)",
                 color: "#fff",
               }}
             >
+              <IconButton
+                onClick={clearSiaSearch}
+                aria-label="Cerrar resultados de observaciones"
+                size="small"
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  color: "#fff",
+                  border: "1px solid rgba(255,255,255,0.25)",
+                  "&:hover": { backgroundColor: "rgba(255,255,255,0.12)" },
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                  <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
+              </IconButton>
               <Typography
                 sx={{
                   fontWeight: 700,
