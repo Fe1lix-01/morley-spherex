@@ -7,6 +7,9 @@ import type { AladinInstance } from "aladin-lite";
 import AnimatedButton from "@/components/ui/AnimatedButton";
 import SegmentedControl from "@/components/ui/SegmentedControl";
 import { eter, glassPanel } from "@/lib/theme";
+import { useSimbadLayer, type SimbadAladinApi, type SimbadAladinView } from "@/hooks/useSimbadLayer";
+import { SimbadCard, SimbadHint, SimbadSelectedRing, SimbadStatus, SimbadToggle } from "@/components/sky/SimbadUI";
+import { CollapsiblePanel } from "@/components/preview/PreviewCard";
 
 type SkySource = "allwise" | "spherex";
 
@@ -44,6 +47,21 @@ export default function SpherexMosaic() {
   const [source, setSource] = useState<SkySource>("allwise");
   const [status, setStatus] = useState("Iniciando Aladin Lite...");
 
+    // Aladin, su API y el contenedor, en estado: el hook de SIMBAD necesita enterarse cuando ya existen.
+  const [mapInfo, setMapInfo] = useState<{ A: SimbadAladinApi; view: SimbadAladinView; host: HTMLElement } | null>(null);
+  // Interruptor de la capa de objetos de SIMBAD: empieza apagado para que el cielo arranque limpio.
+  const [showObjects, setShowObjects] = useState(false);
+    // Mostrar u ocultar el panel de Fuente y Vista, igual que los filtros del visor ÉTER.
+  const [panelOpen, setPanelOpen] = useState(true);
+
+  // Capa SIMBAD: marcas de objetos conocidos, aviso al pasar el cursor y objeto elegido con clic.
+  const simbad = useSimbadLayer({
+    A: mapInfo?.A ?? null,
+    view: mapInfo?.view ?? null,
+    host: mapInfo?.host ?? null,
+    enabled: showObjects,
+  });
+
   useEffect(() => {
     let cancelled = false;
 
@@ -63,6 +81,16 @@ export default function SpherexMosaic() {
         });
 
         aladinRef.current = aladin;
+        // Se le entrega el mapa a la capa SIMBAD. Aladin trae más métodos de los que declaran los
+        // tipos de Felix (que no se tocan), por eso se convierte a los tipos del hook.
+        const host = document.getElementById("eter-mosaic-viewer");
+        if (host) {
+          setMapInfo({
+            A: A as unknown as SimbadAladinApi,
+            view: aladin as unknown as SimbadAladinView,
+            host,
+          });
+        }
         setReady(true);
         setStatus("Visor listo.");
       } catch (error) {
@@ -79,6 +107,7 @@ export default function SpherexMosaic() {
       cancelled = true;
       aladinRef.current?.remove();
       aladinRef.current = null;
+      setMapInfo(null);
     };
   }, []);
 
@@ -140,11 +169,29 @@ export default function SpherexMosaic() {
     <Box sx={{ position: "fixed", inset: 0, backgroundColor: eter.ink }}>
       <Box id="eter-mosaic-viewer" sx={{ position: "absolute", top: 0, left: 0, width: "100vw", height: "100dvh" }} />
 
+      {/* Capa de SIMBAD: no recibe clics (solo el botón del interruptor), así el mapa sigue arrastrable. */}
+      <Box sx={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
+        <SimbadSelectedRing view={mapInfo?.view ?? null} object={simbad.selected} />
+        {simbad.selected && (
+          <SimbadCard key={simbad.selected.oid} object={simbad.selected} onClose={simbad.clearSelected} />
+        )}
+        <SimbadStatus status={simbad.status} />
+        <SimbadToggle
+          on={showObjects}
+          loading={simbad.status === "loading"}
+          onToggle={() => setShowObjects((v) => !v)}
+          left={320}
+        />
+        {simbad.hovered && <SimbadHint x={simbad.pointer.x} y={simbad.pointer.y} />}
+      </Box>
+
       <Box
         sx={{
           position: "fixed",
-          top: 16,
-          left: 16,
+          // Arriba a la izquierda Aladin pone sus coordenadas; la etiqueta va a la derecha, debajo
+          // de sus botones de proyección y pantalla completa.
+          top: 58,
+          right: 16,
           px: 1.5,
           py: 0.5,
           borderRadius: "999px",
@@ -158,54 +205,63 @@ export default function SpherexMosaic() {
         ÉTER · Mosaico SPHEREx
       </Box>
 
+            {/* Panel de Fuente y Vista. El envoltorio fija la posición; el CollapsiblePanel trae la flecha
+          de ocultar, que queda debajo del panel. */}
       <Box
         sx={{
-          ...glassPanel,
           position: "fixed",
-          bottom: 24,
+          // En pantallas grandes el selector de visores va abajo al centro; esto sube el conjunto
+          // (panel y flecha) para no tapar ese selector.
+          bottom: { xs: 16, lg: 68 },
           left: "50%",
           transform: "translateX(-50%)",
           width: "min(92vw, 560px)",
-          p: 2,
-          borderRadius: "16px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 1.5,
-          opacity: ready ? 1 : 0.7,
         }}
       >
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
-          <Typography sx={eyebrowSx}>Fuente</Typography>
-          <SegmentedControl
-            value={source}
-            onChange={(v) => void changeSource(v)}
-            options={SOURCE_OPTIONS}
-            ariaLabel="Fuente de imagen"
-          />
-        </Box>
+        <CollapsiblePanel open={panelOpen} onToggle={() => setPanelOpen((o) => !o)} label="controles del mosaico">
+          <Box
+            sx={{
+              ...glassPanel,
+              p: 2,
+              borderRadius: "16px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 1.5,
+              opacity: ready ? 1 : 0.7,
+            }}
+          >
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
+              <Typography sx={eyebrowSx}>Fuente</Typography>
+              <SegmentedControl
+                value={source}
+                onChange={(v) => void changeSource(v)}
+                options={SOURCE_OPTIONS}
+                ariaLabel="Fuente de imagen"
+              />
+            </Box>
 
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
-          <Typography sx={eyebrowSx}>Vista</Typography>
-          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-            <AnimatedButton disabled={!ready} onClick={() => changeView("all-sky")}>
-              Cielo completo
-            </AnimatedButton>
-            <AnimatedButton disabled={!ready} onClick={() => changeView("galactic-center")}>
-              Centro galáctico
-            </AnimatedButton>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
+              <Typography sx={eyebrowSx}>Vista</Typography>
+              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                <AnimatedButton disabled={!ready} onClick={() => changeView("all-sky")}>
+                  Cielo completo
+                </AnimatedButton>
+                <AnimatedButton disabled={!ready} onClick={() => changeView("galactic-center")}>
+                  Centro galáctico
+                </AnimatedButton>
+              </Box>
+            </Box>
+
+            <Box>
+              <Typography sx={{ fontSize: 13, color: eter.textMuted }}>{SOURCE_NOTE[source]}</Typography>
+              <Typography sx={{ fontSize: 13, color: eter.accent }}>{status}</Typography>
+              <Typography sx={{ mt: 0.5, fontSize: 11, color: eter.textFaint }}>
+                SPHEREx HiPS es solo para visualización. Seleccionar una fuente no garantiza que sus
+                tiles hayan cargado.
+              </Typography>
+            </Box>
           </Box>
-        </Box>
-
-        <Box>
-          <Typography sx={{ fontSize: 13, color: eter.textMuted }}>
-            {SOURCE_NOTE[source]}
-          </Typography>
-          <Typography sx={{ fontSize: 13, color: eter.accent }}>{status}</Typography>
-          <Typography sx={{ mt: 0.5, fontSize: 11, color: eter.textFaint }}>
-            SPHEREx HiPS es solo para visualización. Seleccionar una fuente no garantiza que sus
-            tiles hayan cargado.
-          </Typography>
-        </Box>
+        </CollapsiblePanel>
       </Box>
     </Box>
   );
