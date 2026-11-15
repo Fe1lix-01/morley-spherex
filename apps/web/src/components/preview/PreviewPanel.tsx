@@ -772,56 +772,32 @@ export default function PreviewPanel() {
               Ese punto está fuera de esta imagen.
             </Typography>
           )}
-
-          {/* Selector de modo y épocas */}
-          <CollapsiblePanel
-            open={epochsOpen}
-            onToggle={() =>
-              setEpochsOpen((o) => !o)
-            }
-          >
-            <ModeToggle
-              value={mode}
-              onChange={changeMode}
-            />
-
-            {(!coordinateSearch || !skyMode) &&
-              epochCount > 1 &&
-              shownEpochs.length > 1 && (
-                <PlaybackBar
-                  epochs={shownEpochs}
-                  t={clock.t}
-                  playing={clock.playing}
-                  speed={clock.speed}
-                  onToggle={clock.toggle}
-                  onSeek={clock.seek}
-                  onSpeed={clock.setSpeed}
-                />
-              )}
+          <CollapsiblePanel open={epochsOpen} onToggle={() => setEpochsOpen((o) => !o)}>
+            <ModeToggle value={mode} onChange={changeMode} />
+            {epochCount > 1 && shownEpochs.length > 1 && (
+              <PlaybackBar
+                epochs={shownEpochs}
+                t={clock.t}
+                playing={clock.playing}
+                speed={clock.speed}
+                onToggle={clock.toggle}
+                onSeek={clock.seek}
+                onSpeed={clock.setSpeed}
+              />
+            )}
           </CollapsiblePanel>
-
-          {/* Controles de filtros */}
-          <CollapsiblePanel
-            open={filtersOpen}
-            onToggle={() =>
-              setFiltersOpen((o) => !o)
-            }
-          >
+          <CollapsiblePanel open={filtersOpen} onToggle={() => setFiltersOpen((o) => !o)}>
             <ControlPanel
               filters={FILTERS}
               current={filterIndex}
               onSelect={setFilterIndex}
-              intensityDisabled={
-                filter.fn === null
-              }
+              intensityDisabled={filter.fn === null}
               inten={inten}
               gain={gain}
               onInten={setInten}
               onGain={setGain}
               onUpload={() =>
-                setSceneError(
-                  "En la vista previa se usan las épocas simuladas; no se pueden subir imágenes."
-                )
+                setSceneError("En la vista previa se usan las épocas simuladas; no se pueden subir imágenes.")
               }
               onDemo={() => {}}
               onHelp={() => {
@@ -883,7 +859,7 @@ export default function PreviewPanel() {
               setMenuSection(0);
               setMenuOpen(true);
             }}
-            disabled={false}
+            disabled={!frame}
           />
 
           {selected && cardOpen && (
