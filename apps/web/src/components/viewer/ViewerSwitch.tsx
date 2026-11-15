@@ -18,7 +18,7 @@ export default function ViewerSwitch() {
       <Box
         sx={{
           position: "fixed",
-          top: 12,
+          top: { xs: 12, lg: "auto" }, bottom: { xs: "auto", lg: 14 },
           left: "50%",
           transform: "translateX(-50%)",
           zIndex: 2000,
