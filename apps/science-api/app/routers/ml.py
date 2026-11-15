@@ -34,7 +34,7 @@ def run_cnn_demo():
     if not all([python_path, weights_path, sample_path]):
         raise HTTPException(
             status_code=503,
-            detail="Las variables del módulo ML no están configuradas.",
+            detail="Falta configurar: " + ", ".join(name for name in ("ETER_ML_PYTHON", "ETER_ML_WEIGHTS", "ETER_ML_SAMPLE") if not os.getenv(name)),
         )
 
     if not Path(python_path).is_file():
@@ -131,7 +131,7 @@ def obtener_preview_barnard():
     if not directorio:
         raise HTTPException(
             status_code=503,
-            detail="Directorio de resultados de Barnard no configurado.",
+            detail="Falta ETER_BARNARD_ARTIFACTS_DIR: se requieren barnard_triplete_real_exploratorio.npz y barnard_triplete_real_exploratorio.png.",
         )
 
     ruta = (
@@ -141,12 +141,17 @@ def obtener_preview_barnard():
 
     if not ruta.is_file():
         raise HTTPException(
-            status_code=404,
-            detail="No se encontró el triplete procesado.",
+            status_code=503,
+            detail="Falta barnard_triplete_real_exploratorio.npz en ETER_BARNARD_ARTIFACTS_DIR.",
         )
 
-    with np.load(ruta, allow_pickle=False) as datos:
-        mascara = np.asarray(datos["valid_mask"], dtype=bool)
+    try:
+        with np.load(ruta, allow_pickle=False) as datos:
+            mascara = np.asarray(datos["valid_mask"], dtype=bool)
+        if mascara.ndim != 2 or mascara.size == 0:
+            raise ValueError("valid_mask must be a nonempty 2D array")
+    except (OSError, ValueError, KeyError) as error:
+        raise HTTPException(status_code=503, detail="Artefacto Barnard inválido: se requiere valid_mask 2D no vacía.") from error
 
     alto, ancho = mascara.shape
     validos = int(mascara.sum())
@@ -198,8 +203,8 @@ def obtener_imagen_barnard():
 
     if not ruta.is_file():
         raise HTTPException(
-            status_code=404,
-            detail="No se encontró la imagen procesada.",
+            status_code=503,
+            detail="Falta barnard_triplete_real_exploratorio.png en ETER_BARNARD_ARTIFACTS_DIR.",
         )
 
     return FileResponse(

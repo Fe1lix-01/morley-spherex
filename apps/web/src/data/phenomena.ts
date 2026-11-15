@@ -8,6 +8,6 @@ export type Phenomenon = {
 };
 
 export const PHENOMENA: Phenomenon[] = [
-  { id: "nebulosa", title: "Nebulosas", tagline: "Polvo que oculta, luz que revela.", image: "/fenomenos/nebulosas.jpg" },
+  { id: "nebulosa", title: "Nebulosas", tagline: "Polvo que oculta, luz que revela.", image: "/phenomena/nebulosas.jpg" },
   // ...las otras cinco igual: galaxias, protoestrellas, hielos, cometas, estructura
 ];

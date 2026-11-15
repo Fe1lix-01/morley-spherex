@@ -1,15 +1,27 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, Box, Button, Checkbox, FormControlLabel, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import { coordinate, defaultRegion, focusRegion, type Region, type RoiView } from "@/lib/roi";
 import { roiApi, RoiApiError, type FitsAsset, type Observation, type RoiProduct } from "@/services/roi-api";
+import {useTarget} from "@/components/viewer/TargetContext";
+import {workflowApi,type LocalSearch} from "@/services/workflow-api";
+import ScienceResults from "./ScienceResults";
+import {sameRegion} from "@/services/roi-api";
 import RoiSelection from "./RoiSelection";
 
 /** Mounted in the same positioned container as the existing Aladin view. */
 export default function RoiWorkbench({view}: {view: RoiView | null}) {
-  const [region,setRegion]=useState<Region|null>(null);
+  const shared=useTarget();
+  const target=shared?.target;
+  const initialRegion=target?defaultRegion({ra:target.ra,dec:target.dec}):null;
+  const regionRef=useRef<Region|null>(initialRegion);
+  const [local,setLocal]=useState<LocalSearch|null>(null);
+  const [localId,setLocalId]=useState("");
+  const [temporal,setTemporal]=useState<{id:string;status:string;reason:string;observations:unknown[];pairs:unknown[]}|null>(null);
+  const [jobState,setJobState]=useState("");
+  const [region,setRegion]=useState<Region|null>(initialRegion);
   const [drawing,setDrawing]=useState(false);
-  const [editing,setEditing]=useState(false);
+  const [editing,setEditing]=useState(!!target);
   const [confirmed,setConfirmed]=useState(false);
   const [destinationDirty,setDestinationDirty]=useState(false);
   const [apiStatus,setApiStatus]=useState("Comprobando backend local…");
@@ -26,12 +38,24 @@ export default function RoiWorkbench({view}: {view: RoiView | null}) {
   const [product,setProduct]=useState<RoiProduct|null>(null);
   const [stretch,setStretch]=useState<"asinh"|"linear">("asinh");
   const [band,setBand]=useState("SPHEREx-D2");
-  const [ra,setRa]=useState(""), [dec,setDec]=useState("");
+  const [ra,setRa]=useState(target?String(target.ra):""), [dec,setDec]=useState(target?String(target.dec):"");
+  const [previousTarget,setPreviousTarget]=useState(target);
+  if(target!==previousTarget){
+    setPreviousTarget(target);
+    const next=target?defaultRegion({ra:target.ra,dec:target.dec}):null;
+    setRegion(next);setConfirmed(false);setEditing(!!next);setDrawing(false);
+    setProduct(null);setLocal(null);setLocalId("");setTemporal(null);setObservations(null);
+    setRa(target?String(target.ra):"");setDec(target?String(target.dec):"");setDestinationDirty(false);
+    if(target?.id!==`fits:${asset?.asset_id}`)setAsset(null);
+  }
+  useEffect(()=>{regionRef.current=region;},[region]);
   function checkApi(){
     roiApi.config().then(c=>{setConfig(c);setApiStatus("Backend conectado");}).catch(e=>setApiStatus(e.message));
   }
   useEffect(()=>{checkApi();},[]);
   function changeRegion(r:Region|null){
+    regionRef.current=r;
+    setLocal(null);setLocalId("");setTemporal(null);
     setRegion(r);setConfirmed(false);setProduct(null);setObservations(null);setSelected("");setConsent(false);setDestinationDirty(false);
     if(r){setRa(String(r.center.ra));setDec(String(r.center.dec));}
     else{setRa("");setDec("");setEditing(false);setDrawing(false);}
@@ -44,6 +68,11 @@ export default function RoiWorkbench({view}: {view: RoiView | null}) {
     changeRegion(next);setEditing(true);setError("");
     if(view){const dimensions=view.getSize?.()??[1,1];focusRegion(view,next,config.max_arcmin,dimensions[0]/dimensions[1]);}
   }
+  async function searchLocal(){
+    if(!region)return;
+    const found=await workflowApi.search(region,shared?.targets.some(t=>t.id===target?.id)?target?.id:undefined);
+    if(regionRef.current&&sameRegion(region,regionRef.current))setLocal(found);
+  }
   function activateSelection(){
     try{
       const center=destinationDirty?coordinate([Number(ra),Number(dec)]):view?coordinate(view.getRaDec()):region?.center;
@@ -55,7 +84,7 @@ export default function RoiWorkbench({view}: {view: RoiView | null}) {
   }
   return <>
     <RoiSelection view={view} region={region} drawing={drawing && !busy} editing={editing && !busy && !destinationDirty} max={config.max_arcmin} onChange={changeRegion} onDone={()=>setDrawing(false)} onError={setError}/>
-    <Box component="section" aria-label="Procesamiento de región FITS" sx={{position:"absolute",right:12,top:60,zIndex:3,width:{xs:"min(340px, calc(100% - 24px))",md:350},maxHeight:"calc(100% - 80px)",overflowY:"auto",p:2,borderRadius:2,color:"#eef3ff",background:"rgba(9,18,33,.95)",border:"1px solid #3a5269",pointerEvents:"auto",
+    <Box component="section" aria-label="Procesamiento de región FITS" sx={{position:"absolute",right:12,top:60,zIndex:3,width:{xs:"min(340px, calc(100% - 24px))",md:350},maxHeight:"calc(100% - 150px)",overflowY:"auto",p:2,borderRadius:2,color:"#eef3ff",background:"rgba(9,18,33,.95)",border:"1px solid #3a5269",pointerEvents:"auto",
       "& .MuiInputBase-root":{color:"#eef3ff"},"& .MuiInputLabel-root":{color:"#b9cadc"},
       "& .MuiOutlinedInput-notchedOutline":{borderColor:"#64809a"},"& .MuiSvgIcon-root":{color:"#b9cadc"}
     }}>
@@ -65,13 +94,14 @@ export default function RoiWorkbench({view}: {view: RoiView | null}) {
       </Stack>
       <Stack spacing={1.5} sx={{display:drawing||collapsed?"none":"flex",mt:1}}>
         <Typography variant="caption">{apiStatus} <Button size="small" disabled={!!busy} onClick={checkApi}>Comprobar conexión</Button></Typography>
+        {target&&<Typography variant="caption">Objetivo: {target.name} · {target.epoch?`época J${target.epoch}`:"época no verificada"}. {target.note}</Typography>}
         <Typography variant="caption">ICRS · máximo {config.max_arcmin}′ × {config.max_arcmin}′. El mosaico HiPS orienta la selección; los datos se extraen del FITS.</Typography>
         <Typography variant="caption">Destino ICRS: aplica los campos antes de confirmar la región.</Typography>
         <Stack direction="row" spacing={1}>
           <TextField disabled={!!busy} label="RA (°)" size="small" type="number" value={ra} onChange={e=>{setRa(e.target.value);setDestinationDirty(true);setConfirmed(false);}} />
           <TextField disabled={!!busy} label="Dec (°)" size="small" type="number" value={dec} onChange={e=>{setDec(e.target.value);setDestinationDirty(true);setConfirmed(false);}} />
         </Stack>
-        <Button disabled={!!busy} onClick={()=>{try{if(!ra.trim()||!dec.trim())throw new Error("Indica RA y Dec");centerRegion(coordinate([Number(ra),Number(dec)]));}catch(e){setError(String(e));}}}>Aplicar centro</Button>
+        <Button disabled={!!busy} onClick={()=>{try{if(!ra.trim()||!dec.trim())throw new Error("Indica RA y Dec");const c=coordinate([Number(ra),Number(dec)]);centerRegion(c);shared?.choose({id:"custom",name:"Coordenadas ICRS",...c,epoch:null});}catch(e){setError(String(e));}}}>Aplicar centro</Button>
         <Button disabled={!view||!!busy} variant="contained" onClick={activateSelection}>Seleccionar región</Button>
         <Stack direction="row" spacing={1}>
           <Button variant={drawing?"contained":"outlined"} disabled={!view||!region||!!busy||destinationDirty} onClick={()=>{
@@ -106,6 +136,28 @@ export default function RoiWorkbench({view}: {view: RoiView | null}) {
             <Button disabled={!selected||!consent||!!busy} onClick={()=>void run("Descargando FITS…",async()=>acceptAsset(await roiApi.importRemote(selected)))}>Descargar e inspeccionar</Button>
           </>}
         </>}
+        <Button disabled={!!busy} onClick={()=>void run("Indexando FITS locales…",async()=>{
+          await workflowApi.run({kind:"index"},j=>setJobState(j.status));if(region)await searchLocal();
+        })}>Actualizar catálogo FITS local</Button>
+        <Button disabled={!region||!confirmed||destinationDirty||!!busy} onClick={()=>void run("Buscando cobertura local…",searchLocal)}>Buscar FITS locales del objetivo</Button>
+        {local&&<>
+          <Typography role="status">Catálogo local: {local.status} · {local.products.length} productos cubren el centro</Typography>
+          {local.reason&&<Typography variant="caption">{local.reason}</Typography>}
+          {local.products.length>0&&<>
+            <TextField select label="FITS local registrado" size="small" value={localId} onChange={e=>setLocalId(e.target.value)}>
+              {local.products.map(p=><MenuItem key={p.id} value={p.id}>{p.derived?"Recorte":"Original"} · {p.shape.join("×")} · {p.date_obs??"fecha no individual"} · {p.detector} · {p.coverage.status} · {p.id.slice(0,8)}</MenuItem>)}
+            </TextField>
+            <Button disabled={!localId||!!busy} onClick={()=>void run("Abriendo FITS registrado…",async()=>{
+              const job=await workflowApi.run<FitsAsset>({kind:"import_local",catalog_id:localId,region},j=>setJobState(j.status));acceptAsset(job.result);
+            })}>Usar FITS registrado</Button>
+          </>}
+        </>}
+        <Button disabled={!region||!confirmed||!!busy} onClick={()=>void run("Comprobando épocas locales…",async()=>{
+          const job=await workflowApi.run<{status:string;reason:string;observations:unknown[];pairs:unknown[]}>({kind:"temporal",region},j=>setJobState(j.status));
+          if(regionRef.current&&sameRegion(region!,regionRef.current))setTemporal({id:job.id,...job.result});
+        })}>Comprobar diagnósticos multiepoca</Button>
+        {temporal&&<Box><Typography>Multiepoca: {temporal.status} · {temporal.observations.length} observaciones · {temporal.pairs.length} pares</Typography><Typography variant="caption">{temporal.reason}</Typography><a href={workflowApi.resultUrl(temporal.id)}>Descargar diagnósticos JSON</a></Box>}
+        {jobState&&<Typography variant="caption">Trabajo: {jobState}</Typography>}
         <Button component="label" variant="outlined" disabled={!!busy}>Abrir FITS local
           <input hidden type="file" accept=".fits,.fit,.fts" onChange={e=>{const file=e.target.files?.[0];e.target.value="";if(!file)return;if(file.size>config.max_fits_bytes){setError("El archivo supera el límite de transferencia.");return;}void run("Inspeccionando FITS…",async()=>acceptAsset(await roiApi.upload(file)));}}/>
         </Button>
@@ -115,8 +167,9 @@ export default function RoiWorkbench({view}: {view: RoiView | null}) {
             {asset.extensions.filter(e=>e.processable).map(e=><MenuItem key={e.index} value={e.index}>{e.index}: {e.name} [{e.shape.join(" × ")}] {e.unit??"sin unidad"}</MenuItem>)}
           </TextField>
           <TextField label={`Canal (índice 0–${(extension?.channels??1)-1})`} size="small" type="number" value={channel} disabled={!!busy} onChange={e=>{setChannel(Number(e.target.value));setProduct(null);}} slotProps={{htmlInput:{min:0,max:(extension?.channels??1)-1,step:1}}}/>
-          <Button disabled={!extension?.center||!!busy} onClick={()=>{try{centerRegion(extension!.center!);}catch(e){setError(String(e));}}}>Seleccionar centro del FITS</Button>
-          <Button variant="contained" disabled={!region||!confirmed||destinationDirty||!!busy||!Number.isInteger(channel)||channel<0||channel>=(extension?.channels??1)} onClick={()=>void run("Extrayendo región…",async()=>{setProduct(null);setProduct(await roiApi.process(asset.asset_id,region!,hdu,channel));})}>Extraer región</Button>
+          <Button disabled={!extension?.center||!!busy} onClick={()=>{try{centerRegion(extension!.center!);shared?.choose({id:`fits:${asset.asset_id}`,name:"Centro del FITS seleccionado",...extension!.center!,epoch:null,note:"Centro WCS del archivo, sin asociación automática a un objeto."});}catch(e){setError(String(e));}}}>Seleccionar centro del FITS</Button>
+          <Button variant="contained" disabled={!region||!confirmed||destinationDirty||!!busy||!Number.isInteger(channel)||channel<0||channel>=(extension?.channels??1)} onClick={()=>void run("Extrayendo región…",async()=>{setProduct(null);const job=await workflowApi.run<RoiProduct>({kind:"extract",asset_id:asset.asset_id,region,hdu_index:hdu,channel},j=>setJobState(j.status));
+            if(!sameRegion(region!,job.result.region))throw new Error("El resultado no corresponde a la región enviada");if(regionRef.current&&sameRegion(region!,regionRef.current))setProduct(job.result);})}>Extraer región</Button>
         </>}
         {busy && <Typography role="status">{busy}</Typography>}
         {error && <Alert severity="error" onClose={()=>setError("")}>{error}</Alert>}
@@ -141,6 +194,7 @@ export default function RoiWorkbench({view}: {view: RoiView | null}) {
           {product.statistics.roi_pixels!==product.shape[0]*product.shape[1]&&<Typography variant="caption">La ROI está inclinada respecto a la rejilla: ROI_MASK delimita los píxeles de la selección dentro de esta matriz.</Typography>}
           <Typography variant="body2">Válidos: {product.statistics.valid_pixels}/{product.statistics.roi_pixels}; finitos: {product.statistics.finite_pixels}; enmascarados: {product.statistics.masked_percent.toFixed(2)}%.</Typography>
           <Typography variant="body2">Mediana: {product.statistics.median?.toPrecision(5)??"sin datos"} · σ: {product.statistics.std?.toPrecision(5)??"sin datos"} · MAD: {product.statistics.mad?.toPrecision(5)??"sin datos"}</Typography>
+          <ScienceResults key={product.product_id} product={product}/>
           <Stack direction="row" spacing={2}><a href={roiApi.productUrl(product.product_id,"fits")}>Descargar FITS completo</a><a href={roiApi.productUrl(product.product_id,"json")}>Metadatos JSON</a></Stack>
         </>}
       </Stack>

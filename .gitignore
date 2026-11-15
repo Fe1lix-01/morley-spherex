@@ -238,3 +238,9 @@ data/roi-cache/
 # The shared frontend geometry module is source, not a generated library.
 !apps/web/src/lib/
 !apps/web/src/lib/roi.ts
+
+# Local science index and controlled jobs
+data/science-mvp/
+
+# macOS metadata
+.DS_Store

@@ -126,6 +126,8 @@ def extract_roi(path: Path, region: Region, output: Path, hdu_index=0, channel=0
         science_header = None
         policy = flag_policy(hdul)
         for i, ext in enumerate(hdul):
+            if ext.name in ("ROI_MASK", "QUALITY_MASK", "VALID_MASK", "PROVENANCE"):
+                continue  # Derived masks/provenance are recomputed for the new ROI.
             if isinstance(ext, fits.BinTableHDU) and ext.name in ("SPECTRAL_CHANNELS", "WCS-WAVE"):
                 result.append(ext.copy())
                 preserved.append(ext.name)

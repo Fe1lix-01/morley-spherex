@@ -12,7 +12,8 @@ const result={steps:[]};
 const selection=async()=>JSON.parse(await page.getByTestId('roi-coordinates').getAttribute('data-region'));
 const step=(text)=>{result.steps.push(text);console.log(text);};
 try{
- await page.goto(base+'/sky-test',{waitUntil:'domcontentloaded'});
+ await page.goto(base+'/preview',{waitUntil:'domcontentloaded'});
+ await page.getByRole('button',{name:'Mosaico SPHEREx DR1',exact:true}).click();
  await page.waitForFunction(()=>{const b=[...document.querySelectorAll('button')].find(b=>b.textContent==='Seleccionar región');return b&&!b.disabled;},{},{timeout:45000});
  await page.getByRole('button',{name:'Seleccionar región',exact:true}).click();
  let r=await selection();assert.ok(Math.abs(r.center.ra)<1e-6||r.center.ra>359.999999);assert.ok(Math.abs(r.width_arcmin-10)<.001);step('All-sky activation centers on real view, creates 10 arcmin region');
@@ -45,15 +46,15 @@ try{
   await route.fulfill({json:{observations:[],query:{roi:q.get('roi')}}});
  });
  await page.getByRole('button',{name:'Consultar observaciones',exact:true}).click();await page.getByText('Región sin observaciones para este detector.',{exact:false}).waitFor();assert.deepEqual(sent,await selection());step('SIA request equals confirmed displayed region (stubbed metadata only)');
- await page.locator('input[type=file]').setInputFiles(fitsPath);
+ await page.locator('input[type=file][accept=".fits,.fit,.fts"]').setInputFiles(fitsPath);
  await page.getByRole('button',{name:'Seleccionar centro del FITS',exact:true}).waitFor({timeout:30000});
  await page.getByRole('button',{name:'Seleccionar centro del FITS',exact:true}).click();
  await page.getByLabel(/Canal \(índice/).fill('51');
  await page.getByRole('button',{name:'Confirmar región',exact:true}).click();
  const expected=await selection();
- const responsePromise=page.waitForResponse(r=>r.url().endsWith('/science/roi/products')&&r.request().method()==='POST',{timeout:30000});
+ const responsePromise=page.waitForResponse(async r=>r.url().includes('/science/workflow/jobs/')&&r.request().method()==='GET'&&(await r.json().catch(()=>({}))).result?.cube_shape?.[0]===102,{timeout:30000});
  await page.getByRole('button',{name:'Extraer región',exact:true}).click();
- const response=await responsePromise;assert.equal(response.status(),200);result.product=await response.json();assert.deepEqual(result.product.region,expected);assert.equal(result.product.statistics.valid_pixels,4224);
+ const response=await responsePromise;assert.equal(response.status(),200);result.product=(await response.json()).result;assert.deepEqual(result.product.region,expected);assert.equal(result.product.statistics.valid_pixels,4224);
  await page.getByRole('link',{name:'Descargar FITS completo',exact:true}).waitFor();
  assert.deepEqual(result.product.shape,[67,67]);assert.deepEqual(result.product.cube_shape,[102,67,67]);
  const images=page.getByRole('img',{name:/Imagen científica original|Imagen con máscara de calidad aplicada|Máscara binaria de calidad/});
@@ -61,8 +62,7 @@ try{
  await page.waitForFunction(()=>[...document.querySelectorAll('img')].filter(i=>/Imagen científica original|Imagen con máscara de calidad aplicada|Máscara binaria de calidad/.test(i.alt)).every(i=>i.complete&&i.naturalWidth===67));
  const downloadPromise=page.waitForEvent('download');await page.getByRole('link',{name:'Descargar FITS completo',exact:true}).click();
  const download=await downloadPromise;await download.saveAs(artifacts+'/M101-10arcmin-cube.fits');
- const jsonPromise=page.waitForEvent('download');await page.getByRole('link',{name:'Metadatos JSON',exact:true}).click();
- const jsonDownload=await jsonPromise;await jsonDownload.saveAs(artifacts+'/M101-10arcmin-cube.json');
+ const [jsonDownload]=await Promise.all([page.waitForEvent('download'), page.getByRole('link',{name:'Metadatos JSON',exact:true}).click()]);await jsonDownload.saveAs(artifacts+'/M101-10arcmin-cube.json');
  assert.deepEqual(JSON.parse(await fs.readFile(artifacts+'/M101-10arcmin-cube.json','utf8')),result.product);
  const oldStats=JSON.stringify(result.product.statistics);
  await page.getByLabel('Escala de visualización').click();await page.getByRole('option',{name:'Lineal',exact:true}).click();

@@ -8,6 +8,7 @@
  * le pasa la vista de Aladin, así que el cambio en su archivo es de unas pocas líneas.
  */
 
+import {useTarget} from "@/components/viewer/TargetContext";
 import { useEffect, useRef, useState } from "react";
 import { findObjectsInField, MAX_FOV_FOR_LAYER, type SimbadObject } from "@/lib/simbadQuery";
 
@@ -62,10 +63,17 @@ type Args = {
 };
 
 export function useSimbadLayer({ A, view, host, enabled }: Args) {
+  const shared=useTarget();
+  const choose=shared?.choose, targets=shared?.targets;
   const [status, setStatus] = useState<SimbadLayerStatus>("off");
   const [hovered, setHovered] = useState<SimbadObject | null>(null);
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
   const [selected, setSelected] = useState<SimbadObject | null>(null);
+  useEffect(()=>{
+    if(!selected||!choose)return;
+    const verified=targets?.find(t=>t.identity===selected.id);
+    choose(verified??{id:`simbad:${selected.oid}`,name:selected.id,ra:selected.ra,dec:selected.dec,epoch:2000,note:"SIMBAD ICRS J2000; movimiento propio no aplicado a este objeto."});
+  },[selected,choose,targets]);
 
   // `enabled` se lee desde los eventos de Aladin (que se registran una sola vez), por eso va en un ref.
   const enabledRef = useRef(enabled);

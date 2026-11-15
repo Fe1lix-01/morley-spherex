@@ -6,16 +6,18 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import PreviewPanel from "@/components/preview/PreviewPanel";
 import SpherexMosaic from "./SpherexMosaic";
+import {TargetProvider} from "./TargetContext";
 import BarnardPanel from "./BarnardPanel";
 
 type Visor = "eter" | "spherex";
 
 /** Alterna entre el visor ÉTER (filtros, épocas, SIMBAD) y el mosaico SPHEREx DR1 de Felix. */
 export default function ViewerSwitch() {
+  const [mosaicOpened, setMosaicOpened] = useState(false);
   const [visor, setVisor] = useState<Visor>("eter");
 
   return (
-    <>
+    <TargetProvider onOpenRoi={()=>{setMosaicOpened(true);setVisor("spherex");}}>
       <Box
         sx={{
           position: "fixed",
@@ -33,7 +35,7 @@ export default function ViewerSwitch() {
           size="small"
           value={visor}
           onChange={(_, v: Visor | null) => {
-            if (v) setVisor(v);
+            if (v) { setVisor(v); if(v==="spherex")setMosaicOpened(true); requestAnimationFrame(()=>window.dispatchEvent(new Event("resize"))); }
           }}
           aria-label="Cambiar de visor"
         >
@@ -42,9 +44,10 @@ export default function ViewerSwitch() {
         </ToggleButtonGroup>
       </Box>
 
-      {visor === "eter" ? <PreviewPanel /> : <SpherexMosaic />}
+      <div style={{display:visor==="eter"?"block":"none",height:"100%"}}><PreviewPanel active={visor==="eter"} /></div>
+      {mosaicOpened&&<div style={{display:visor==="spherex"?"block":"none",height:"100%"}}><SpherexMosaic /></div>}
 
       <BarnardPanel />
-    </>
+    </TargetProvider>
   );
 }

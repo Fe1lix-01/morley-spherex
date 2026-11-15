@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTarget } from "@/components/viewer/TargetContext";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Alert from "@mui/material/Alert";
@@ -106,7 +107,9 @@ type SearchCoordinates = {
  *
  * La búsqueda SIA devuelve metadatos, no píxeles FITS.
  */
-export default function PreviewPanel() {
+export default function PreviewPanel({active=true}:{active?:boolean}) {
+  const shared = useTarget();
+  const hasShared=shared!==null;
   const [frames, setFrames] = useState<Frame[] | null>(null);
   const [objects, setObjects] = useState<MovingObject[]>([]);
   const [epochs, setEpochs] = useState<Epoch[]>([]);
@@ -155,7 +158,7 @@ export default function PreviewPanel() {
 
     Promise.all([
       skyData.getFrames(),
-      skyData.getObjects(),
+      hasShared ? Promise.resolve({objects:[] as MovingObject[]}) : skyData.getObjects(),
       skyData.getEpochs(),
     ])
       .then(([f, o, e]) => {
@@ -176,7 +179,20 @@ export default function PreviewPanel() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [hasShared]);
+
+  const sharedTarget=shared?.target;
+  const [previousTarget,setPreviousTarget]=useState<typeof sharedTarget>(null);
+  if(sharedTarget!==previousTarget){
+    setPreviousTarget(sharedTarget);
+    if(sharedTarget){
+      setSkyTarget(current=>({raDeg:sharedTarget.ra,decDeg:sharedTarget.dec,fovDeg:.5,nonce:current.nonce+1}));
+      setSkyOpened(true);setMode("sky");
+      setMarker({id:sharedTarget.id,label:sharedTarget.name,ra:sharedTarget.ra,dec:sharedTarget.dec});
+      setSelected(shared?.objects.find(o=>o.id===sharedTarget.id)??null);setCardOpen(true);
+    }
+  }
+
 
   const frame = frames?.[0] ?? null;
   const filter = FILTERS[filterIndex];
@@ -249,6 +265,7 @@ export default function PreviewPanel() {
    * Busca observaciones SPHEREx por RA/Dec.
    */
   const search = (ra: number, dec: number) => {
+    if(shared?.target?.ra!==ra||shared?.target?.dec!==dec)shared?.choose({id:"custom",name:"Coordenadas ICRS",ra,dec,epoch:null});
     const requestId = ++siaRequestId.current;
 
     setSearchCoordinates({ ra, dec });
@@ -334,6 +351,7 @@ export default function PreviewPanel() {
    * Selecciona un candidato del catálogo de demostración.
    */
   const pickCandidate = (obj: MovingObject) => {
+    shared?.pick(obj.id);
     const first = trackPoints(obj)[0];
 
     if (!first) return;
@@ -371,7 +389,7 @@ export default function PreviewPanel() {
     (!frame && !coordinateSearch ? "Cargando imágenes…" : null);
 
   const selectValue =
-    selected?.id ?? (marker ? "custom" : "");
+    shared?.target?.id && (shared.objects.some(o=>o.id===shared.target?.id)) ? shared.target.id : selected?.id ?? (marker ? "custom" : "");
 
   /**
    * Marcadores visibles en el mapa.
@@ -399,6 +417,7 @@ export default function PreviewPanel() {
    */
   const resetViewer = () => {
     clearSiaSearch();
+    shared?.choose(null);
 
     clock.pause();
     clock.seek(0);
@@ -481,7 +500,7 @@ export default function PreviewPanel() {
         <>
           {skyOpened && !skyFailed && (
             <SkyStage
-              active={skyMode}
+              active={active&&skyMode}
               target={skyTarget}
               cssFilter={skyCssFilter(
                 filter.id,
@@ -554,6 +573,12 @@ export default function PreviewPanel() {
             </Typography>
           )}
 
+          {shared?.target&&<Box sx={{p:1}} data-testid="eter-target" data-target={JSON.stringify(shared.target)}>
+            <Typography>{shared.target.name} · ICRS {shared.target.ra.toFixed(6)}°, {shared.target.dec.toFixed(6)}° · {shared.target.epoch?`época J${shared.target.epoch}`:"época no verificada"}</Typography>
+            <Button onClick={()=>search(shared.target!.ra,shared.target!.dec)}>Consultar observaciones del objetivo</Button>
+            <Button onClick={shared.openRoi}>Iniciar ROI del objetivo</Button>
+          </Box>}
+          {shared?.error&&<Alert severity="warning">{shared.error}</Alert>}
           {/* Resultados de búsqueda científica */}
           {coordinateSearch && skyMode && (
             <Box
@@ -837,7 +862,7 @@ export default function PreviewPanel() {
                 onUpload={() =>
                   setSceneError("En la vista previa se usan las épocas simuladas; no se pueden subir imágenes.")
                 }
-                onDemo={() => {}}
+                onDemo={()=>{clearSiaSearch();setSelected(null);setMarker(null);clock.seek(0);changeMode("epochs");}}
                 onHelp={() => {
                   setMenuSection(1);
                   setMenuOpen(true);
@@ -874,6 +899,7 @@ export default function PreviewPanel() {
               fovDeg
             ) => {
               clearSiaSearch();
+              shared?.choose({id:"custom",name:"Región ICRS",ra,dec,epoch:null});
 
               setSelected(null);
               setMarker(null);
@@ -882,10 +908,10 @@ export default function PreviewPanel() {
               changeMode("sky");
               goSky(ra, dec, fovDeg);
             }}
-            objects={objects}
+            objects={shared?.objects??objects}
             value={selectValue}
             onPickCandidate={(id) => {
-              const obj = objects.find(
+              const obj = (shared?.objects??objects).find(
                 (o) => o.id === id
               );
 
@@ -898,7 +924,7 @@ export default function PreviewPanel() {
             disabled={false}
           />
 
-          {selected && cardOpen && (
+          {selected && cardOpen && (hasOwnImages(selected)||!shared?.targets.some(t=>t.id===selected.id)) && (
             <PreviewCard
               object={selected}
               epochs={shownEpochs}

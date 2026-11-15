@@ -1,6 +1,11 @@
 
 declare module "aladin-lite" {
   export interface HiPSLayer {
+  setCuts(min: number, max: number, format?: string): void;
+  getCuts(): number[];
+  setBrightness(value: number): void;
+  setContrast(value: number): void;
+  setGamma(value: number): void;
   setSliceNumber(slice: number): void;
 
   setFrequency(options: {
@@ -25,6 +30,9 @@ declare module "aladin-lite" {
   interface HiPSOptions {
     name?: string;
     imgFormat?: string;
+    minCut?: number;
+    maxCut?: number;
+    stretch?: string;
     successCallback?: (layer: HiPSLayer) => void;
     errorCallback?: (error: unknown) => void;
   }

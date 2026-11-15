@@ -39,3 +39,6 @@ app.include_router(remote_previews.router)
 app.include_router(ml.router)
 app.include_router(roi.router)
 app.include_router(diagnostics.router)
+
+from app.routers import science_workflow
+app.include_router(science_workflow.router)

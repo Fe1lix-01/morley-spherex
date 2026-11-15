@@ -27,11 +27,12 @@ import { scienceApi } from "@/services/science-api";
 function describeError(error: unknown): string {
   const text = error instanceof Error ? error.message : "";
   const status = /^Science API (\d+)/.exec(text)?.[1];
-  if (status === "503") return "El backend está encendido, pero todavía no tiene configurados los resultados de Barnard o de la CNN.";
+  if (status === "503") return `Servicio no disponible: ${text.replace(/^Science API 503: /, "")}`;
   if (status === "404") return "El backend no encontró el archivo procesado de Barnard.";
   if (status === "504") return "La demostración tardó más del tiempo permitido en el servidor.";
   if (status === "502") return "El proceso científico del servidor falló. Revisa los logs del backend.";
   if (status) return `El backend respondió con HTTP ${status}.`;
+  if (text.includes("Falta configurar") || text.includes("503")) return `Servicio no disponible: ${text}`;
   return "No se pudo conectar con el backend. Verifica que science-api esté corriendo y que NEXT_PUBLIC_API_URL apunte a él.";
 }
 

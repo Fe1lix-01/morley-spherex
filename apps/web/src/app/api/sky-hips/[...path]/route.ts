@@ -22,43 +22,58 @@ function errorResponse(error: string, status: number): Response {
   });
 }
 
-export async function GET(request: Request, { params }: Context): Promise<Response> {
-  const { path } = await params;
-  const resource = path.join("/");
-  if (!isAllowed(resource)) return errorResponse("Recurso HiPS no permitido.", 400);
+type Tile = { body: ArrayBuffer; upstream: string; expires: number };
+const FALLBACK = "https://hips.china-vo.org/m/CDS_P_allWISE_color/";
+const cache = new Map<string, Tile>();
+const pending = new Map<string, Promise<Tile>>();
+let cacheBytes = 0;
+const MAX_CACHE_BYTES = 32 * 1024 * 1024;
 
-  const timeout = AbortSignal.timeout(20000);
-  try {
-    const response = await fetch(new URL(resource, UPSTREAM), {
-      // CORS lo aplica el navegador, no esta solicitud desde el servidor.
-      cache: "no-store",
-      redirect: "error",
-      signal: AbortSignal.any([timeout, request.signal]),
-    });
-    if (!response.ok) {
-      return errorResponse(
-        `IRSA respondió HTTP ${response.status} al solicitar ${resource}.`,
-        response.status === 404 ? 404 : 502,
-      );
+async function load(resource: string): Promise<Tile> {
+  const cached = cache.get(resource);
+  if (cached && cached.expires > Date.now()) return cached;
+  if (cached) { cacheBytes -= cached.body.byteLength; cache.delete(resource); }
+  const existing = pending.get(resource);
+  if (existing) return existing;
+  const request = (async () => {
+    for (const upstream of [UPSTREAM, FALLBACK]) {
+      try {
+        const response = await fetch(new URL(resource, upstream), {
+          cache: "no-store", redirect: "error", signal: AbortSignal.timeout(6000),
+        });
+        if (!response.ok) continue;
+        const body = await response.arrayBuffer();
+        const tile = { body, upstream, expires: Date.now() + 3600000 };
+        if (body.byteLength <= MAX_CACHE_BYTES) {
+          while (cacheBytes + body.byteLength > MAX_CACHE_BYTES && cache.size) {
+            const key = cache.keys().next().value!;
+            cacheBytes -= cache.get(key)!.body.byteLength; cache.delete(key);
+          }
+          cache.set(resource, tile); cacheBytes += body.byteLength;
+        }
+        return tile;
+      } catch { /* Try the documented mirror of the same AllWISE survey. */ }
     }
-    // Leer antes de responder permite capturar también un timeout del cuerpo.
-    // Las imágenes se mantienen como bytes, sin convertirlas a texto/JSON.
-    const body = await response.arrayBuffer();
-    return new Response(body, {
-      headers: {
-        "Content-Type": resource === "properties"
-          ? "text/plain; charset=utf-8"
-          : resource.endsWith(".fits") ? "application/fits" : "image/jpeg",
-        "Cache-Control": "public, max-age=3600",
-        "X-Content-Type-Options": "nosniff",
-      },
-    });
-  } catch {
-    return errorResponse(
-      timeout.aborted
-        ? "IRSA no respondió en 20 segundos. Comprueba la conexión del servidor de Next.js."
-        : "El servidor de Next.js no pudo descargar el recurso de IRSA. Comprueba su conexión a internet.",
-      timeout.aborted ? 504 : 502,
-    );
+    throw new Error("AllWISE no disponible en IRSA ni en el espejo HiPS. Reintenta más tarde.");
+  })().finally(() => pending.delete(resource));
+  pending.set(resource, request);
+  return request;
+}
+
+export async function GET(_request: Request, { params }: Context): Promise<Response> {
+  const resource = (await params).path.join("/");
+  if (!isAllowed(resource)) return errorResponse("Recurso HiPS no permitido.", 400);
+  try {
+    const tile = await load(resource);
+    return new Response(tile.body.slice(0), { headers: {
+      "Content-Type": resource === "properties" ? "text/plain; charset=utf-8"
+        : resource.endsWith(".fits") ? "application/fits" : "image/jpeg",
+      "Cache-Control": "public, max-age=3600",
+      "X-HiPS-Survey": "AllWISE RGB-W4-W2-W1",
+      "X-HiPS-Upstream": tile.upstream,
+      "X-Content-Type-Options": "nosniff",
+    }});
+  } catch (error) {
+    return errorResponse((error as Error).message, 503);
   }
 }

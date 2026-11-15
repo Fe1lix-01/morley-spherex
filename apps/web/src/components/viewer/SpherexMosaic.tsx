@@ -3,8 +3,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import Box from "@mui/material/Box";
+import { useTarget } from "./TargetContext";
+import { MenuItem, TextField } from "@mui/material";
+import Slider from "@mui/material/Slider";
 import Typography from "@mui/material/Typography";
 import type { AladinInstance, HiPSLayer } from "aladin-lite";
+import { spherexFrameAddress } from "@/lib/spherex-hips";
+import RoiWorkbench from "@/components/roi/RoiWorkbench";
 import AnimatedButton from "@/components/ui/AnimatedButton";
 import SegmentedControl from "@/components/ui/SegmentedControl";
 import { eter, glassPanel } from "@/lib/theme";
@@ -28,7 +33,7 @@ type SkySource = "allwise" | "spherex";
 
 const SURVEYS: Record<SkySource, string> = {
   // AllWISE alojado por NASA/IPAC IRSA.
-  allwise: "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/RGB-W4-W2-W1",
+  allwise: "/api/sky-hips",
 
   // Cubo espectral HiPS de SPHEREx DR1.
   spherex: "https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube",
@@ -56,6 +61,8 @@ const eyebrowSx = {
  * Consolida el selector espectral de Kevin y los controles de Richi.
  */
 export default function SpherexMosaic() {
+  const shared = useTarget();
+  const target = shared?.target;
   const aladinRef = useRef<AladinInstance | null>(null);
 
   const [ready, setReady] = useState(false);
@@ -79,6 +86,8 @@ export default function SpherexMosaic() {
     enabled: showObjects,
   });
 
+  const [brightness, setBrightness] = useState(0);
+  const [contrast, setContrast] = useState(0);
   const [channel, setChannel] = useState(62);
 
   const spherexLayerRef = useRef<HiPSLayer | null>(null);
@@ -106,6 +115,7 @@ export default function SpherexMosaic() {
         });
 
         aladinRef.current = aladin;
+        setRoiView(aladin);
 
         const host = document.getElementById("eter-mosaic-viewer");
 
@@ -137,6 +147,11 @@ export default function SpherexMosaic() {
     };
   }, []);
 
+  useEffect(()=>{
+    if(!roiView||!target)return;
+    roiView.setProjection("SIN");roiView.gotoRaDec(target.ra,target.dec);roiView.setFoV(.5);
+  },[roiView,target]);
+
   // Cambio de canal espectral SPHEREx
   useEffect(() => {
     if (source !== "spherex") return;
@@ -159,7 +174,7 @@ export default function SpherexMosaic() {
 
       try {
         layer.setFrequency({
-          value: info.wavelengthUm * 1e-6,
+          value: spherexFrameAddress(channel),
           unit: "m",
         });
 
@@ -201,17 +216,24 @@ export default function SpherexMosaic() {
       const spherexHiPS = A.HiPS(SURVEYS.spherex, {
         name: "SPHEREx DR1",
         imgFormat: "png",
+        // PNG tiles are already stretched, and contain display values 0–255.
+        // The product's physical 0–40 cut is not a second PNG display cut.
+        minCut: 0,
+        maxCut: 255,
+        stretch: "linear",
 
         successCallback: (layer) => {
           if (sourceRef.current !== "spherex") return;
 
           spherexLayerRef.current = layer;
+          layer.setBrightness(brightness);
+          layer.setContrast(contrast);
 
           const info = getSpherexChannel(channel);
 
           if (info.valid) {
             layer.setFrequency({
-              value: info.wavelengthUm * 1e-6,
+              value: spherexFrameAddress(channel),
               unit: "m",
             });
 
@@ -221,7 +243,12 @@ export default function SpherexMosaic() {
 
         errorCallback: (error) => {
           console.error("Falló la carga de SPHEREx:", error);
-          setStatus("No se pudo cargar SPHEREx HiPS.");
+          if (sourceRef.current !== "spherex") return;
+          sourceRef.current = "allwise";
+          spherexLayerRef.current = null;
+          aladin.setBaseImageLayer(SURVEYS.allwise);
+          setSource("allwise");
+          setStatus("SPHEREx no disponible. Se muestra AllWISE como referencia, no como datos SPHEREx.");
         },
       });
 
@@ -275,6 +302,8 @@ export default function SpherexMosaic() {
           height: "100dvh",
         }}
       />
+
+      <RoiWorkbench view={roiView} />
 
       {/* Capa SIMBAD de Richi */}
       <Box
@@ -331,7 +360,7 @@ export default function SpherexMosaic() {
           pointerEvents: "none",
         }}
       >
-        ÉTER · Mosaico SPHEREx
+        ÉTER · {source === "spherex" ? "SPHEREx DR1" : "AllWISE (referencia)"}
       </Box>
 
       {/* Panel unificado de Fuente y Vista */}
@@ -369,6 +398,10 @@ export default function SpherexMosaic() {
               opacity: ready ? 1 : 0.7,
             }}
           >
+            {shared&&<TextField select label="Elegir candidato" size="small" value={shared.objects.some(o=>o.id===target?.id)?target!.id:""} onChange={e=>shared.pick(e.target.value)}>
+              {shared.objects.map(o=><MenuItem key={o.id} value={o.id}>{o.name??o.id}</MenuItem>)}
+            </TextField>}
+            {target&&<Typography variant="caption" data-testid="mosaic-target" data-target={JSON.stringify(target)}>{target.name} · ICRS {target.ra.toFixed(6)}°, {target.dec.toFixed(6)}° · {target.epoch?`época J${target.epoch}`:"época no verificada"}</Typography>}
             {/* Selector de fuente */}
             <Box
               sx={{
@@ -457,32 +490,10 @@ export default function SpherexMosaic() {
               </Typography>
             </Box>
           </Box>
-        </CollapsiblePanel>
-      </Box>
-
       {/* Selector de los 102 canales SPHEREx */}
       {source === "spherex" && (
         <Box
-          sx={{
-            ...glassPanel,
-            position: "fixed",
-            top: "auto",
-            left: "auto",
-            right: { xs: 12, md: 24 },
-            bottom: { xs: 16, md: 24 },
-            width: {
-              xs: "calc(100vw - 24px)",
-              md: 390,
-            },
-            maxHeight: {
-              xs: "42dvh",
-              md: "calc(100dvh - 104px)",
-            },
-            overflowY: "auto",
-            p: 2.5,
-            borderRadius: "16px",
-            zIndex: 10,
-          }}
+          sx={{ ...glassPanel, p: 2, mt: 1.5, borderRadius: "16px" }}
         >
           <Typography
             sx={{
@@ -495,6 +506,12 @@ export default function SpherexMosaic() {
             Selector espectral SPHEREx DR1
           </Typography>
 
+          <Typography variant="caption">Brillo visual (sin alterar FITS)</Typography>
+          <Slider aria-label="Brillo del mosaico" min={-0.8} max={0.8} step={0.02} value={brightness}
+            onChange={(_, value) => { setBrightness(value as number); spherexLayerRef.current?.setBrightness(value as number); }} />
+          <Typography variant="caption">Contraste visual</Typography>
+          <Slider aria-label="Contraste del mosaico" min={-0.8} max={0.8} step={0.02} value={contrast}
+            onChange={(_, value) => { setContrast(value as number); spherexLayerRef.current?.setContrast(value as number); }} />
           <SpherexChannelSelector
             channel={channel}
             onChange={(nextChannel) => {
@@ -514,6 +531,10 @@ export default function SpherexMosaic() {
           />
         </Box>
       )}
+        </CollapsiblePanel>
+      </Box>
+
+
     </Box>
   );
 }
