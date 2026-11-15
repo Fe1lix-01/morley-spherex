@@ -24,13 +24,17 @@ export function useScrollHint(resetKey: unknown) {
 
   // Recalcula la flecha cuando cambia el alto del contenido (acordeón animándose, resize).
   useEffect(() => {
-    if (!bodyEl || !innerEl || typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver(check);
-    ro.observe(bodyEl);
-    ro.observe(innerEl);
-    check();
-    return () => ro.disconnect();
-  }, [bodyEl, innerEl, check]);
+  if (!bodyEl || !innerEl || typeof ResizeObserver === "undefined") {
+    return;
+  }
+
+  const ro = new ResizeObserver(check);
+
+  ro.observe(bodyEl);
+  ro.observe(innerEl);
+
+  return () => ro.disconnect();
+}, [bodyEl, innerEl, check]);
 
   const scrollDown = useCallback(() => {
     bodyEl?.scrollBy({ top: 240, behavior: "smooth" });

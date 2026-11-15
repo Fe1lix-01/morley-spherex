@@ -39,16 +39,18 @@ export function useSpectralScene(filter: FilterDef, inten: number, gain: number,
   }, [filter, inten, gain]);
 
   // Carga la escena demo: usa /public/escena-demo.jpg si existe; si no, genera una simulada.
-  const loadDemo = useCallback(async (layers: Layers, isCancelled: () => boolean = () => false) => {
+  // Solo carga los datos; los setters se ejecutan después en un callback de la promesa.
+  const loadDemo = useCallback(async (
+    layers: Layers,
+    isCancelled: () => boolean = () => false
+  ): Promise<boolean> => {
     try {
       await loadUrlIntoLayers(DEMO_IMAGE_URL, layers);
     } catch {
-      if (isCancelled()) return;
+      if (isCancelled()) return false;
       generateScene(layers);
     }
-    if (isCancelled()) return;
-    setSource("demo");
-    setSceneVersion((v) => v + 1);
+    return !isCancelled();
   }, []);
 
   // Al montar: crea las capas y carga la imagen indicada o, si no hay, la escena demo.
@@ -67,7 +69,12 @@ export function useSpectralScene(filter: FilterDef, inten: number, gain: number,
           if (!cancelled) setError("No se pudo cargar la imagen de la época.");
         });
     } else {
-      loadDemo(layers, () => cancelled);
+      void loadDemo(layers, () => cancelled).then((loaded) => {
+        if (!loaded || cancelled) return;
+        setSource("demo");
+        setError(null);
+        setSceneVersion((v) => v + 1);
+      });
     }
     return () => {
       cancelled = true;
@@ -95,7 +102,14 @@ export function useSpectralScene(filter: FilterDef, inten: number, gain: number,
 
   // Vuelve a la escena demo.
   const reloadDemo = () => {
-    if (layersRef.current) loadDemo(layersRef.current);
+    const layers = layersRef.current;
+    if (!layers) return;
+    void loadDemo(layers).then((loaded) => {
+      if (!loaded || layersRef.current !== layers) return;
+      setSource("demo");
+      setError(null);
+      setSceneVersion((v) => v + 1);
+    });
   };
 
   const clearError = () => setError(null);

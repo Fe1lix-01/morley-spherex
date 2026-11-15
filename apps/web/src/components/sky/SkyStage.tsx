@@ -424,7 +424,7 @@ export default function SkyStage({
             on={showObjects}
             loading={simbad.status === "loading"}
             onToggle={() => setShowObjects((v) => !v)}
-          />
+           />
 
           {/* Aviso de SIMBAD: una sola vez, fuera de los marcadores, para que use las coordenadas del visor. */}
           {simbad.hovered && <SimbadHint x={simbad.pointer.x} y={simbad.pointer.y} />}

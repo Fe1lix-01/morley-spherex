@@ -100,7 +100,9 @@ export function useSimbadLayer({ A, view, host, enabled }: Args) {
         const query = async () => {
       if (!active) return;
       if (!enabledRef.current) {
+        controller?.abort();
         setHovered(null);
+        setSelected(null);
         catalog.removeAll();
         last = null;
         setStatus("off");
@@ -168,10 +170,12 @@ export function useSimbadLayer({ A, view, host, enabled }: Args) {
     }, 250);
 
     view.on("objectHovered", (source) => {
+      if (!enabledRef.current) return;
       setHovered(asSimbadObject(source));
     });
     view.on("objectHoveredStop", () => setHovered(null));
         view.on("objectClicked", (source) => {
+      if (!enabledRef.current) return;
       // Clic en el cielo vacío: llega null y se cierra la tarjeta.
       setSelected(asSimbadObject(source));
       // Aladin dibuja su propio resaltado en la marca elegida y ese resaltado se queda fijo en la pantalla
@@ -195,13 +199,9 @@ export function useSimbadLayer({ A, view, host, enabled }: Args) {
     };
   }, [A, view]);
 
-  /* Al encender o apagar la capa, se consulta o se limpia. */
+  /* El cambio del interruptor programa la actualización del catálogo. */
   useEffect(() => {
     refresh.current();
-    if (!enabled) {
-      setHovered(null);
-      setSelected(null);
-    }
   }, [enabled]);
 
   /* Posición del cursor dentro del visor, para colocar el aviso junto a la marca. */
