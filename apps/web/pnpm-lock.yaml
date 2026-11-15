@@ -188,7 +188,7 @@ importers:
         specifier: 3.8.2
         version: 3.8.2
       lucide-react:
-        specifier: ^1.72.0
+        specifier: ^1.63.0
         version: 1.72.0(@types/react@19.3.0)(react@19.3.0)
       next:
         specifier: 16.4.6
