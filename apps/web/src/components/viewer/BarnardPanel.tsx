@@ -175,7 +175,7 @@ export default function BarnardPanel() {
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-controls="barnard-panel"
-        sx={{ ...buttonSx, position: "fixed", top: 136, left: 24, zIndex: 1250 }}
+        sx={{ ...buttonSx, position: "fixed", top: 12, left: 364, zIndex: 1250 }}
       >
         {open ? "Cerrar análisis" : "Análisis Barnard"}
       </Button>
