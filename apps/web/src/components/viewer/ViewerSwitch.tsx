@@ -6,6 +6,7 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import PreviewPanel from "@/components/preview/PreviewPanel";
 import SpherexMosaic from "./SpherexMosaic";
+import BarnardPanel from "./BarnardPanel";
 
 type Visor = "eter" | "spherex";
 
@@ -42,6 +43,8 @@ export default function ViewerSwitch() {
       </Box>
 
       {visor === "eter" ? <PreviewPanel /> : <SpherexMosaic />}
+
+      <BarnardPanel />
     </>
   );
 }
