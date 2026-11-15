@@ -17,10 +17,12 @@ import { KIND_LABELS } from "@/lib/model/labels";
 /* CollapsiblePanel: panel que se pliega hacia abajo                   */
 /* ------------------------------------------------------------------ */
 
-type CollapsiblePanelProps = { open: boolean; onToggle: () => void; children: ReactNode };
-
+type CollapsiblePanelProps = { open: boolean; onToggle: () => void; children: ReactNode;
+/** Qué oculta o muestra la flecha, para el lector de pantalla ("filtros" por defecto). */
+  label?: string;
+};
 /** Panel que se pliega hacia abajo. La flecha queda siempre al centro, abajo. */
-export function CollapsiblePanel({ open, onToggle, children }: CollapsiblePanelProps) {
+export function CollapsiblePanel({ open, onToggle, children, label = "filtros" }: CollapsiblePanelProps) {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
       <Collapse in={open} sx={{ width: "100%" }}>
@@ -28,7 +30,7 @@ export function CollapsiblePanel({ open, onToggle, children }: CollapsiblePanelP
       </Collapse>
       <IconButton
         onClick={onToggle}
-        aria-label={open ? "Ocultar filtros" : "Mostrar filtros"}
+        aria-label={open ? `Ocultar ${label}` : `Mostrar ${label}`}
         aria-expanded={open}
         sx={{
           mt: 1,

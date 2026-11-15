@@ -457,16 +457,19 @@ export function SimbadToggle({
   on,
   loading,
   onToggle,
+  left = 84,
 }: {
   on: boolean;
   loading: boolean;
   onToggle: () => void;
+  /** Distancia al borde izquierdo. Con la barra de campo de visión de Aladin hay que correrlo a la derecha. */
+  left?: number;
 }) {
   return (
     <Box
       sx={{
         position: "absolute",
-        left: 84, // junto a los botones de zoom de Aladin; ajusta este número si se encima
+        left, // junto a los botones de zoom de Aladin; ajusta este número si se encima
         bottom: 12,
         display: "flex",
         pointerEvents: "none",
@@ -518,10 +521,11 @@ export function SimbadToggle({
         }}
       >
         {/* Tres anillos de distinto tamaño: las mismas marcas que se dibujan sobre las estrellas. */}
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-          <circle cx="6.5" cy="12.5" r="3.5" />
-          <circle cx="14" cy="6" r="2.5" />
-          <circle cx="14.5" cy="14.5" r="2" />
+                {/* Tres estrellas de distinto tamaño, de cuatro puntas: se leen bien incluso en 20 px. */}
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M8 9 C8.6 13.2 9.8 14.4 14 15 C9.8 15.6 8.6 16.8 8 21 C7.4 16.8 6.2 15.6 2 15 C6.2 14.4 7.4 13.2 8 9 Z" />
+          <path d="M17 3 C17.4 5.8 18.2 6.6 21 7 C18.2 7.4 17.4 8.2 17 11 C16.6 8.2 15.8 7.4 13 7 C15.8 6.6 16.6 5.8 17 3 Z" />
+          <path d="M18 15 C18.3 17.1 18.9 17.7 21 18 C18.9 18.3 18.3 18.9 18 21 C17.7 18.9 17.1 18.3 15 18 C17.1 17.7 17.7 17.1 18 15 Z" />
         </svg>
       </Box>
 
