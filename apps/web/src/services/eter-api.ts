@@ -12,6 +12,8 @@ import type {
   ObjectsResponse,
   AstronomicalObjectDetail,
   ObservationsResponse,
+  SiaSearchParams,
+  SiaResponse,
 } from "@/contracts/api";
 
 /**
@@ -141,4 +143,48 @@ export const eterApiService = {
   getObservations(): Promise<ObservationsResponse> {
     return request<ObservationsResponse>("/observations");
   },
+
+
+  searchSiaObservations({
+    ra,
+    dec,
+    radiusArcsec = 30,
+    band = "SPHEREx-D2",
+    collection = "spherex_qr3",
+    limit = 10,
+  }: SiaSearchParams): Promise<SiaResponse> {
+    if (!Number.isFinite(ra) || ra < 0 || ra >= 360) {
+      throw new Error("RA debe estar entre 0 y menos de 360 grados.");
+    }
+
+    if (!Number.isFinite(dec) || dec < -90 || dec > 90) {
+      throw new Error("Dec debe estar entre -90 y 90 grados.");
+    }
+
+    if (
+      !Number.isFinite(radiusArcsec) ||
+      radiusArcsec <= 0 ||
+      radiusArcsec > 300
+    ) {
+      throw new Error("El radio debe ser mayor que 0 y maximo 300 arcsec.");
+    }
+
+    if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
+      throw new Error("El limite debe estar entre 1 y 100.");
+    }
+
+    const params = new URLSearchParams({
+      ra: String(ra),
+      dec: String(dec),
+      radius_arcsec: String(radiusArcsec),
+      band,
+      collection,
+      limit: String(limit),
+    });
+
+    return request<SiaResponse>(
+      `/sia/observations?${params.toString()}`
+    );
+  },
+
 };

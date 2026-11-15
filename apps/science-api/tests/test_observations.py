@@ -3,7 +3,7 @@ from app.main import app
 
 client = TestClient(app)
 
-def test_get_observations():
+def test_get_observations(fits_sinteticos):
     response = client.get('/api/v1/observations')                  ## Realizamos la peticion a fastapi ##
 
     assert response.status_code == 200                             ## Se responde de manera correcta a la peticion ##

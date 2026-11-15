@@ -1,0 +1,60 @@
+ETER / MORLEY - CNN EXPERIMENTAL
+
+Objetivo:
+Clasificar candidatos astronomicos como posibles cambios
+reales o artefactos mediante una red convolucional.
+
+Arquitectura:
+CNN pequena inspirada en el enfoque real/bogus de braai.
+
+Entrada:
+Tres imagenes de 63 x 63 pixeles:
+
+1. Science: imagen de la observacion reciente.
+2. Reference: imagen de referencia.
+3. Difference: diferencia entre ambas imagenes.
+
+Formato:
+NPZ con matrices:
+
+science    (63, 63)
+reference  (63, 63)
+difference (63, 63)
+
+Salida:
+JSON con una puntuacion experimental de clasificacion.
+
+Modelo:
+eter_mini_vgg6_style_v1
+
+IMPORTANTE:
+El modelo de demostracion esta entrenado exclusivamente
+con datos sinteticos.
+
+No esta validado cientificamente con SPHEREx.
+No implementa ZOGY ni reproyeccion WCS.
+No sustituye el calculo de movimiento propio.
+
+Antes de utilizar imagenes reales:
+- Comprobar el mismo detector y respuesta espectral.
+- Alinear las imagenes mediante WCS.
+- Aplicar mascaras FLAGS y considerar VARIANCE.
+- Verificar cobertura y compatibilidad de epocas.
+- Preparar recortes centrados en los candidatos.
+
+El modelo debe permanecer separado del backend principal
+hasta que se valide su integracion.
+
+Repositorio de referencia:
+https://github.com/dmitryduev/braai
+
+Dependencias:
+numpy
+torch
+
+Comandos:
+python eter_cnn_mvp.py demo
+python eter_cnn_mvp.py train --dataset labeled.npz
+python eter_cnn_mvp.py infer --input triplet.npz --weights model.pt
+
+No subir a Git archivos grandes FITS ni modelos de demostracion.

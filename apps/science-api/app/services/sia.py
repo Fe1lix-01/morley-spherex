@@ -123,7 +123,17 @@ def transform_sia_results(
 
 def list_sia_observations(query: SiaQuery) -> SiaResponse:
     """Consulta IRSA SIA y devuelve sus datos normalizados."""
+    # Disk cache only for the new ROI path; legacy search behavior remains unchanged.
+    import hashlib
+    import time
+    from app.services.roi import CACHE, atomic_write
+    key = hashlib.sha256(query.model_dump_json().encode()).hexdigest()
+    cached = CACHE / f"sia-{key}.json"
+    if query.roi and cached.exists() and time.time() - cached.stat().st_mtime < 3600:
+        return SiaResponse.model_validate_json(cached.read_text())
     client = SiaClient()
     table = client.fetch_observations(query)
-
-    return transform_sia_results(table, query)
+    result = transform_sia_results(table, query)
+    if query.roi:
+        atomic_write(cached, result.model_dump_json().encode())
+    return result

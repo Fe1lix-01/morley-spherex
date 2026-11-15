@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import sia
-from app.routers import remote_previews
+from app.routers import remote_previews, roi
 
 # Importamos los tres módulos de rutas.
 # Esta importación debe aparecer una sola vez.
-from app.routers import health, observations, objects, irsa, frames, science_preview
+from app.routers import health, observations, objects, irsa, frames, science_preview, ml
 
 
 app = FastAPI(
@@ -35,3 +35,5 @@ app.include_router(frames.router)
 app.include_router(science_preview.router)
 app.include_router(sia.router)
 app.include_router(remote_previews.router)
+app.include_router(ml.router)
+app.include_router(roi.router)
