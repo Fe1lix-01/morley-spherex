@@ -6,9 +6,9 @@ import { GREETING, SUGGESTED, type ChatMode } from "@/data/chatKnowledge";
 import { LABEL, reply } from "./chatEngine";
 import Robot from "./Robot";
 
-const FAB_RIGHT = 20;
-const FAB_BOTTOM = 56;
-const PANEL_BOTTOM = 112;
+const FAB_RIGHT = 8;
+const FAB_BOTTOM = 14;
+const PANEL_BOTTOM = 72;
 const THINK_MS = 550;
 const TALK_MS = 1600;
 
