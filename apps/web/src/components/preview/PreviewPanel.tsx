@@ -261,41 +261,63 @@ export default function PreviewPanel() {
               Ese punto está fuera de esta imagen.
             </Typography>
           )}
-          <CollapsiblePanel open={epochsOpen} onToggle={() => setEpochsOpen((o) => !o)}>
-            <ModeToggle value={mode} onChange={changeMode} />
-            {epochCount > 1 && shownEpochs.length > 1 && (
-              <PlaybackBar
-                epochs={shownEpochs}
-                t={clock.t}
-                playing={clock.playing}
-                speed={clock.speed}
-                onToggle={clock.toggle}
-                onSeek={clock.seek}
-                onSpeed={clock.setSpeed}
+            {/* Paneles de abajo: desde pantallas grandes (lg) cada uno va en una esquina, épocas a la
+              izquierda y filtros a la derecha. En pantallas menores se quedan apilados, como antes,
+              para no romper tablet ni móvil. */}
+          <Box
+            sx={{
+              position: { xs: "static", lg: "absolute" },
+              left: { lg: 24 },
+              bottom: { lg: 24 },
+              width: { xs: "100%", lg: 440 },
+            }}
+          >
+            <CollapsiblePanel open={epochsOpen} onToggle={() => setEpochsOpen((o) => !o)}>
+              <ModeToggle value={mode} onChange={changeMode} />
+              {epochCount > 1 && shownEpochs.length > 1 && (
+                <PlaybackBar
+                  epochs={shownEpochs}
+                  t={clock.t}
+                  playing={clock.playing}
+                  speed={clock.speed}
+                  onToggle={clock.toggle}
+                  onSeek={clock.seek}
+                  onSpeed={clock.setSpeed}
+                />
+              )}
+            </CollapsiblePanel>
+          </Box>
+          <Box
+            sx={{
+              position: { xs: "static", lg: "absolute" },
+              right: { lg: 24 },
+              bottom: { lg: 24 },
+              width: { xs: "100%", lg: 460 },
+            }}
+          >
+            <CollapsiblePanel open={filtersOpen} onToggle={() => setFiltersOpen((o) => !o)}>
+              <ControlPanel
+                filters={FILTERS}
+                current={filterIndex}
+                onSelect={setFilterIndex}
+                intensityDisabled={filter.fn === null}
+                inten={inten}
+                gain={gain}
+                onInten={setInten}
+                onGain={setGain}
+                onUpload={() =>
+                  setSceneError("En la vista previa se usan las épocas simuladas; no se pueden subir imágenes.")
+                }
+                onDemo={() => {}}
+                onHelp={() => {
+                  setMenuSection(1);
+                  setMenuOpen(true);
+                }}
+                stacked
+                isDemo={false}
               />
-            )}
-          </CollapsiblePanel>
-          <CollapsiblePanel open={filtersOpen} onToggle={() => setFiltersOpen((o) => !o)}>
-            <ControlPanel
-              filters={FILTERS}
-              current={filterIndex}
-              onSelect={setFilterIndex}
-              intensityDisabled={filter.fn === null}
-              inten={inten}
-              gain={gain}
-              onInten={setInten}
-              onGain={setGain}
-              onUpload={() =>
-                setSceneError("En la vista previa se usan las épocas simuladas; no se pueden subir imágenes.")
-              }
-              onDemo={() => {}}
-              onHelp={() => {
-                setMenuSection(1);
-                setMenuOpen(true);
-              }}
-              isDemo={false}
-            />
-          </CollapsiblePanel>
+            </CollapsiblePanel>
+          </Box>
         </Box>
       }
       filterLabel={`${filter.name} · ${filter.band}`}
