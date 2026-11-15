@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import FileResponse
 
 router = APIRouter(
     prefix="/api/v1/ml",
@@ -113,3 +114,97 @@ def run_cnn_demo():
         "scientifically_validated": False,
         "result": result,
     }
+
+
+@router.get("/barnard/preview")
+def obtener_preview_barnard():
+    """
+    Metadatos de una comparación exploratoria de
+    observaciones SPHEREx de Barnard.
+
+    No ejecuta la CNN ni confirma una detección.
+    """
+    import numpy as np
+
+    directorio = os.getenv("ETER_BARNARD_ARTIFACTS_DIR")
+
+    if not directorio:
+        raise HTTPException(
+            status_code=503,
+            detail="Directorio de resultados de Barnard no configurado.",
+        )
+
+    ruta = (
+        Path(directorio)
+        / "barnard_triplete_real_exploratorio.npz"
+    )
+
+    if not ruta.is_file():
+        raise HTTPException(
+            status_code=404,
+            detail="No se encontró el triplete procesado.",
+        )
+
+    with np.load(ruta, allow_pickle=False) as datos:
+        mascara = np.asarray(datos["valid_mask"], dtype=bool)
+
+    alto, ancho = mascara.shape
+    validos = int(mascara.sum())
+    total = int(mascara.size)
+
+    return {
+        "object": "Barnard",
+        "source": "SPHEREx",
+        "detector": "D2",
+        "mode": "exploratory_wcs_aligned",
+        "reference_date": "2026-08-18",
+        "science_date": "2026-09-22",
+        "wavelength_um_approx": 1.511,
+        "image_url": "/api/v1/ml/barnard/preview/image",
+        "shape": [alto, ancho],
+        "valid_pixels": validos,
+        "total_pixels": total,
+        "valid_fraction": round(validos / total, 4),
+        "center_pixel_valid": bool(
+            mascara[alto // 2, ancho // 2]
+        ),
+        "cnn_inference_performed": False,
+        "scientifically_validated": False,
+        "limitations": [
+            "Central region contains flagged pixels",
+            "PSF matching has not been performed",
+            "Difference image is exploratory",
+            "No astrophysical movement detection is claimed",
+        ],
+    }
+
+
+@router.get("/barnard/preview/image")
+def obtener_imagen_barnard():
+    """Devuelve la visualización PNG del triplete."""
+
+    directorio = os.getenv("ETER_BARNARD_ARTIFACTS_DIR")
+
+    if not directorio:
+        raise HTTPException(
+            status_code=503,
+            detail="Directorio de resultados no configurado.",
+        )
+
+    ruta = (
+        Path(directorio)
+        / "barnard_triplete_real_exploratorio.png"
+    )
+
+    if not ruta.is_file():
+        raise HTTPException(
+            status_code=404,
+            detail="No se encontró la imagen procesada.",
+        )
+
+    return FileResponse(
+        path=ruta,
+        media_type="image/png",
+        filename="barnard_spherex_comparison.png",
+    )
+
