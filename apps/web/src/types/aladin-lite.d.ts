@@ -1,8 +1,13 @@
 
 declare module "aladin-lite" {
   export interface HiPSLayer {
-    setSliceNumber(slice: number): void;
-  }
+  setSliceNumber(slice: number): void;
+
+  setFrequency(options: {
+    value: number;
+    unit: "m";
+  }): void;
+}
 
   export interface AladinInstance {
     setBaseImageLayer(source: string | HiPSLayer): void;
