@@ -4,6 +4,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { AladinInstance } from "aladin-lite";
 
+import RoiWorkbench from "@/components/roi/RoiWorkbench";
+
 type SkySource = "allwise" | "spherex";
 
 const SURVEYS: Record<SkySource, string> = {
@@ -20,6 +22,7 @@ const SURVEYS: Record<SkySource, string> = {
 export default function SkyComparison() {
   const aladinRef = useRef<AladinInstance | null>(null);
   const [ready, setReady] = useState(false);
+  const [roiView, setRoiView] = useState<AladinInstance | null>(null);
   const [source, setSource] = useState<SkySource>("allwise");
   const [status, setStatus] = useState("Initializing Aladin Lite...");
 
@@ -49,6 +52,7 @@ export default function SkyComparison() {
 
 
         aladinRef.current = aladin;
+        setRoiView(aladin);
         setReady(true);
         setStatus("Viewer initialized.");
       } catch (error) {
@@ -197,6 +201,7 @@ async function changeSource(next: SkySource) {
         </button>
       </div>
 
+      <div style={{position:"relative"}}>
       <div
         id="eter-sky-viewer"
         style={{
@@ -208,6 +213,8 @@ async function changeSource(next: SkySource) {
           overflow: "hidden",
         }}
       />
+      <RoiWorkbench view={roiView} />
+      </div>
 
       <p style={{ marginTop: 16, color: "#b7c1dc" }}>
         Selected source:{" "}

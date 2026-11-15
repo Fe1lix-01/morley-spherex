@@ -1,4 +1,6 @@
 from typing import Literal
+from pydantic import field_validator
+from app.core.science import Region
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
 
@@ -37,6 +39,24 @@ class SiaQuery(BaseModel):
         "SPHEREx-D5",
         "SPHEREx-D6",
     ] = "SPHEREx-D2"
+
+    roi: str | None = Field(default=None, description="Región ICRS serializada como JSON; reemplaza el círculo")
+
+    @field_validator("roi")
+    @classmethod
+    def validate_roi(cls, value):
+        if value is not None:
+            Region.model_validate_json(value)
+        return value
+
+    @model_validator(mode="after")
+    def validate_roi_center(self):
+        if self.roi:
+            region = Region.model_validate_json(self.roi)
+            delta_ra = abs((self.ra - region.center.ra + 180) % 360 - 180)
+            if delta_ra > 1e-8 or abs(self.dec - region.center.dec) > 1e-8:
+                raise ValueError("RA/Dec de consulta no coinciden con el centro de la región confirmada")
+        return self
 
     limit: int = Field(default=10, ge=1, le=100)
 

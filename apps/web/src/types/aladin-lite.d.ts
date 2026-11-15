@@ -11,6 +11,10 @@ declare module "aladin-lite" {
     setFoV(fov: number): void;
     gotoRaDec(ra: number, dec: number): void;
     remove(): void;
+    pix2world(x: number, y: number, frame?: string): number[] | null;
+    world2pix(ra: number, dec: number): number[] | null;
+    getRaDec(): number[];
+  getSize?(): number[];
   }
 
   interface HiPSOptions {

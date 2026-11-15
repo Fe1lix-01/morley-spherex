@@ -73,6 +73,11 @@ class SiaClient:
             "COLLECTION": query.collection,
         }
 
+        if query.roi:
+            from app.core.science import Region
+            region = Region.model_validate_json(query.roi)
+            params["POS"] = "POLYGON " + " ".join(f"{c.ra} {c.dec}" for c in region.corners)
+
         with httpx.Client(
             timeout=SIA_TIMEOUT,
             follow_redirects=True,

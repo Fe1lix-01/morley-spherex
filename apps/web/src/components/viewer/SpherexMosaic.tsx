@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import type { AladinInstance } from "aladin-lite";
+import RoiWorkbench from "@/components/roi/RoiWorkbench";
 import AnimatedButton from "@/components/ui/AnimatedButton";
 import SegmentedControl from "@/components/ui/SegmentedControl";
 import { eter, glassPanel } from "@/lib/theme";
@@ -41,6 +42,7 @@ const eyebrowSx = {
 export default function SpherexMosaic() {
   const aladinRef = useRef<AladinInstance | null>(null);
   const [ready, setReady] = useState(false);
+  const [roiView, setRoiView] = useState<AladinInstance | null>(null);
   const [source, setSource] = useState<SkySource>("allwise");
   const [status, setStatus] = useState("Iniciando Aladin Lite...");
 
@@ -63,6 +65,7 @@ export default function SpherexMosaic() {
         });
 
         aladinRef.current = aladin;
+        setRoiView(aladin);
         setReady(true);
         setStatus("Visor listo.");
       } catch (error) {
@@ -139,6 +142,8 @@ export default function SpherexMosaic() {
   return (
     <Box sx={{ position: "fixed", inset: 0, backgroundColor: eter.ink }}>
       <Box id="eter-mosaic-viewer" sx={{ position: "absolute", top: 0, left: 0, width: "100vw", height: "100dvh" }} />
+
+      <RoiWorkbench view={roiView} />
 
       <Box
         sx={{
