@@ -69,6 +69,16 @@ export default function SpherexMosaic() {
         });
 
         aladinRef.current = aladin;
+        // Se le entrega el mapa a la capa SIMBAD. Aladin trae más métodos de los que declaran los
+        // tipos de Felix (que no se tocan), por eso se convierte a los tipos del hook.
+        const host = document.getElementById("eter-mosaic-viewer");
+        if (host) {
+          setMapInfo({
+            A: A as unknown as SimbadAladinApi,
+            view: aladin as unknown as SimbadAladinView,
+            host,
+          });
+        }
         setReady(true);
         setStatus("Visor listo.");
       } catch (error) {
@@ -85,6 +95,7 @@ export default function SpherexMosaic() {
       cancelled = true;
       aladinRef.current?.remove();
       aladinRef.current = null;
+      setMapInfo(null);
     };
   }, []);
 
@@ -202,11 +213,29 @@ export default function SpherexMosaic() {
     <Box sx={{ position: "fixed", inset: 0, backgroundColor: eter.ink }}>
       <Box id="eter-mosaic-viewer" sx={{ position: "absolute", top: 0, left: 0, width: "100vw", height: "100dvh" }} />
 
+      {/* Capa de SIMBAD: no recibe clics (solo el botón del interruptor), así el mapa sigue arrastrable. */}
+      <Box sx={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
+        <SimbadSelectedRing view={mapInfo?.view ?? null} object={simbad.selected} />
+        {simbad.selected && (
+          <SimbadCard key={simbad.selected.oid} object={simbad.selected} onClose={simbad.clearSelected} />
+        )}
+        <SimbadStatus status={simbad.status} />
+        <SimbadToggle
+          on={showObjects}
+          loading={simbad.status === "loading"}
+          onToggle={() => setShowObjects((v) => !v)}
+          left={320}
+        />
+        {simbad.hovered && <SimbadHint x={simbad.pointer.x} y={simbad.pointer.y} />}
+      </Box>
+
       <Box
         sx={{
           position: "fixed",
-          top: 16,
-          left: 16,
+          // Arriba a la izquierda Aladin pone sus coordenadas; la etiqueta va a la derecha, debajo
+          // de sus botones de proyección y pantalla completa.
+          top: 58,
+          right: 16,
           px: 1.5,
           py: 0.5,
           borderRadius: "999px",
@@ -220,6 +249,8 @@ export default function SpherexMosaic() {
         ÉTER · Mosaico SPHEREx
       </Box>
 
+            {/* Panel de Fuente y Vista. El envoltorio fija la posición; el CollapsiblePanel trae la flecha
+          de ocultar, que queda debajo del panel. */}
       <Box
         sx={{
   ...glassPanel,
@@ -251,28 +282,28 @@ export default function SpherexMosaic() {
           />
         </Box>
 
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
-          <Typography sx={eyebrowSx}>Vista</Typography>
-          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-            <AnimatedButton disabled={!ready} onClick={() => changeView("all-sky")}>
-              Cielo completo
-            </AnimatedButton>
-            <AnimatedButton disabled={!ready} onClick={() => changeView("galactic-center")}>
-              Centro galáctico
-            </AnimatedButton>
-          </Box>
-        </Box>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
+              <Typography sx={eyebrowSx}>Vista</Typography>
+              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                <AnimatedButton disabled={!ready} onClick={() => changeView("all-sky")}>
+                  Cielo completo
+                </AnimatedButton>
+                <AnimatedButton disabled={!ready} onClick={() => changeView("galactic-center")}>
+                  Centro galáctico
+                </AnimatedButton>
+              </Box>
+            </Box>
 
-        <Box>
-          <Typography sx={{ fontSize: 13, color: eter.textMuted }}>
-            {SOURCE_NOTE[source]}
-          </Typography>
-          <Typography sx={{ fontSize: 13, color: eter.accent }}>{status}</Typography>
-          <Typography sx={{ mt: 0.5, fontSize: 11, color: eter.textFaint }}>
-            SPHEREx HiPS es solo para visualización. Seleccionar una fuente no garantiza que sus
-            tiles hayan cargado.
-          </Typography>
-        </Box>
+            <Box>
+              <Typography sx={{ fontSize: 13, color: eter.textMuted }}>{SOURCE_NOTE[source]}</Typography>
+              <Typography sx={{ fontSize: 13, color: eter.accent }}>{status}</Typography>
+              <Typography sx={{ mt: 0.5, fontSize: 11, color: eter.textFaint }}>
+                SPHEREx HiPS es solo para visualización. Seleccionar una fuente no garantiza que sus
+                tiles hayan cargado.
+              </Typography>
+            </Box>
+          </Box>
+        </CollapsiblePanel>
       </Box>
       {source === "spherex" && (
   <Box
