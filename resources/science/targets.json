@@ -73,5 +73,15 @@
     "bibcode": "2020yCat.1350....0G",
     "verified_at": "2026-11-15",
     "note": "Identidad de cat\u00e1logo; no detecci\u00f3n en los FITS locales."
+  },
+  {
+    "id": "m101",
+    "name": "Galaxia M101 (Molinete)",
+    "kind": "region",
+    "identity": "M 101",
+    "ra": 210.8023,
+    "dec": 54.3489,
+    "reference_epoch": null,
+    "note": "Centro de la región científica M101 utilizada para extraer FITS y analizar los 102 canales espectrales SPHEREx. No representa una detección temporal."
   }
 ]

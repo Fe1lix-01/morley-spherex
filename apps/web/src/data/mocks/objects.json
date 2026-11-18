@@ -7,6 +7,13 @@
   },
   "objects": [
     {
+      "id": "m101",
+      "kind": "region",
+      "name": "Galaxia M101 (Molinete)",
+      "summary": "Región galáctica ICRS para análisis espectral y ROI; no representa una detección temporal.",
+      "positions": [{"epochId": "catalog", "ra": 210.8023, "dec": 54.3489, "fovDeg": 0.5}]
+    },
+    {
       "id": "m42",
       "kind": "nebula",
       "name": "Nebulosa de Orión (M42)",

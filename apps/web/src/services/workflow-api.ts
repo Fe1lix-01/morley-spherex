@@ -1,6 +1,6 @@
 import type { Region } from "@/lib/roi";
 const base=(process.env.NEXT_PUBLIC_API_URL??"http://127.0.0.1:8000/api/v1").replace(/\/$/,"")+"/science/workflow";
-export type ScienceTarget={id:string;name:string;kind:"star"|"brown_dwarf";identity:string;ra:number;dec:number;epoch:number;reference_epoch:number;source:string;propagation:string;note:string};
+export type ScienceTarget={id:string;name:string;kind:"star"|"brown_dwarf"|"region";identity:string;ra:number;dec:number;epoch:number|null;reference_epoch:number|null;source?:string;propagation:string;note:string};
 export type LocalProduct={id:string;filename:string;shape:number[];kind:string;derived:boolean;date_obs:string|null;detector:string;unit:string|null;coverage:{status:string;reason:string|null};provenance:{sha256:string;collection:string|null}};
 export type LocalSearch={status:string;reason:string|null;indexed:number;products:LocalProduct[]};
 export type Job<T=unknown>={id:string;status:"QUEUED"|"RUNNING"|"SUCCEEDED"|"FAILED";result:T;error:string|null};

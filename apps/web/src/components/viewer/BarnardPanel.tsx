@@ -287,6 +287,44 @@ export default function BarnardPanel() {
             </>
           )}
 
+                    {/* ---- Certificado ---- */}
+          <Box sx={{ ...cardSx, mt: 3 }}>
+            <Typography sx={{ fontSize: 15, fontWeight: 600 }}>
+              Tu experiencia con Project Morley
+            </Typography>
+
+            <Typography
+              sx={{ fontSize: 13, color: eter.textMuted, mt: 0.75 }}
+            >
+              Conserva un reconocimiento conmemorativo de la exploración
+              de la estrella de Barnard.
+            </Typography>
+
+            <Button
+              component="a"
+              href="/certificados/barnard-felix.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Obtén tu certificado: abrir PDF en una pestaña nueva"
+              fullWidth
+              sx={{
+                ...buttonSx,
+                mt: 2,
+                color: eter.accent,
+                borderColor: eter.accent,
+                backgroundColor: eter.accentGlow,
+              }}
+            >
+              Obtén tu certificado
+            </Button>
+
+            <Typography
+              sx={{ fontSize: 11, color: eter.textFaint, mt: 1 }}
+            >
+              PDF a nombre de Félix Uriel Guerero García.
+            </Typography>
+          </Box>
+
           {/* ---- CNN ---- */}
           <Typography sx={{ fontSize: 15, fontWeight: 600, mt: 4 }}>CNN experimental</Typography>
           <Typography sx={{ fontSize: 13, color: eter.textMuted, mt: 0.5 }}>

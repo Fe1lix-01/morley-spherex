@@ -11,6 +11,9 @@ from app.core.paths import PROJECT_ROOT
 def targets(epoch=2026.0):
     rows = json.loads((PROJECT_ROOT / 'resources/science/targets.json').read_text())
     for row in rows:
+        if row['kind'] == 'region':
+            row.update(epoch=None, propagation='Fixed ICRS region; no proper motion applied')
+            continue
         c = SkyCoord(ra=row['ra']*u.deg, dec=row['dec']*u.deg,
                      pm_ra_cosdec=row['pm_ra_cosdec_masyr']*u.mas/u.yr,
                      pm_dec=row['pm_dec_masyr']*u.mas/u.yr,

@@ -2,6 +2,7 @@ import type { ObjectKind } from "@/data/contracts";
 
 /** Nombres en español para los tipos de objeto. La interfaz siempre va en español. */
 export const KIND_LABELS: Record<ObjectKind, string> = {
+  region: "Región",
   asteroid: "Asteroide",
   comet: "Cometa",
   star: "Estrella",
